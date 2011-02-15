@@ -1,0 +1,9 @@
+random ideas...
+
+- une mélodie = cycle de x temps, un ensemble de notes
+- une note ajoutée à chaque cycle de génération : n fils qui attendent m votes chacun, le meilleur fils donne la prochaine génération
+- mutation pour certain fils sur les notes existantes
+- la plupart du temps 1 note chaque 4 temps, parfois 1 / 2 temps, rarement 1/1 temps, parfois 1 note après 8 temps
+- une note dans une mélodie : sa hauteur, sa position dans le cycle
+- possibilité d'ajouter une note : à la suite ou bien de façon dichotomique
+- s'arrêter à un certain rang r de génération
