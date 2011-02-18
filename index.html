@@ -6,19 +6,30 @@
     <script type="text/javascript" src="jsfx/jsfxlib.js"></script>
   </head>
   <body>
-    <canvas id="melody"></canvas>
+    <h1>Coming soon...</h1>
     <script type="text/javascript">
       
       var freqGamme = function(refFreq, octave, ton) {
         return refFreq * Math.pow(2, octave-3+(ton-10)/12);
       }
       
-      var createWave = function(params) {
-        var data = jsfx.generate(params);
-        return audio.make(data);
+      var generate = function(params) {
+        return jsfx.generate(jsfxlib.arrayToParams(params));
       }
+      var mix = function(a, b) {
+        var data = new Array(Math.max(a.length, b.length));
+        for(var d=0; d<a.length||d<b.length; ++d) {
+          var v1 = d<a.length ? a[d] : 0;
+          var v2 = d<b.length ? b[d] : 0;
+          data[d] = (v1 + v2)/2;
+        }
+        return data;
+      }
+      
       var createMelody = function(freq) {
-        return createWave(jsfxlib.arrayToParams(["synth",0.0000,0.1000,0.1000,0.3000,1.3260,0.2240,20.0000,freq,2000.0000,0.0000,0.0000,0.0000,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000]));
+        var data1 = generate(["synth",0.0000,0.4000,0.1000,0.3000,1.3260,0.2240,20.0000,freq,2000.0000,0.0000,0.0000,0.0000,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000]);
+        var data2 = generate(["saw",0.0000,0.1500,0.1000,0.3000,1.3260,0.2240,20.0000,freq,2000.0000,0.0000,0.0000,0.0300,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000]);
+        return audio.make(mix(data1, data2));
       }
       
       var notes = [];
@@ -26,14 +37,26 @@
       for(var ton in tonsOctave) {
         notes.push(createMelody(freqGamme(440, 4, tonsOctave[ton])));
       }
-      notes.push(createMelody(freqGamme(440, 5, 1)));
+      notes.push(createMelody(freqGamme(440, 5, 1))); // do (sup)
       
       var t = 0;
-      var interval = setInterval(function(){
-        if(t>=notes.length) return clearInterval(interval);
-        notes[t].play();
-        ++t;
-      }, 200);
+      var escapeFreq = 5;
+      var i = 0;
+      interval = setInterval(function(){
+        if(t<notes.length) {
+          if(i>0 && i%escapeFreq==0) {
+            notes[t].play();
+            ++t;
+          }
+        }
+        else {
+          if(escapeFreq-- > 0) {
+            t = 0;
+            i = -3;
+          }
+        }
+        ++i;
+      }, 100);
       
     </script>
   </body>
