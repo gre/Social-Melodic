@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="jsfx/audio.js"></script>
+    <script type="text/javascript" src="jsfx/jsfx.js"></script>
+    <script type="text/javascript" src="jsfx/jsfxlib.js"></script>
+  </head>
+  <body>
+    <canvas id="melody"></canvas>
+    <script type="text/javascript">
+      
+      var freqGamme = function(refFreq, octave, ton) {
+        return refFreq * Math.pow(2, octave-3+(ton-10)/12);
+      }
+      
+      var createWave = function(params) {
+        var data = jsfx.generate(params);
+        return audio.make(data);
+      }
+      var createMelody = function(freq) {
+        return createWave(jsfxlib.arrayToParams(["synth",0.0000,0.1000,0.1000,0.3000,1.3260,0.2240,20.0000,freq,2000.0000,0.0000,0.0000,0.0000,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000]));
+      }
+      
+      var notes = [];
+      var tonsOctave = [1, 3, 5, 6, 8, 10, 12] // do re mi fa sol la si
+      for(var ton in tonsOctave) {
+        notes.push(createMelody(freqGamme(440, 4, tonsOctave[ton])));
+      }
+      notes.push(createMelody(freqGamme(440, 5, 1)));
+      
+      var t = 0;
+      var interval = setInterval(function(){
+        if(t>=notes.length) return clearInterval(interval);
+        notes[t].play();
+        ++t;
+      }, 200);
+      
+    </script>
+  </body>
+</html>
