@@ -46,8 +46,8 @@
       
       // number all notes from 0 to n : 
       // do=0 re=1 mi=2 fa sol la si do re mi fa sol la si ...
-      var createNote = function(pitch) {
-        if(pitch<0 || pitch>=nbPitch) return null;
+      var createNote = function(pitch, maxPitch) {
+        if(pitch<0 || pitch>=maxPitch) return null;
         var octave = 4;
         while(pitch>5) {
           pitch -= 5;
@@ -76,7 +76,7 @@
       
       var notes = [];
       for(var i=0; i<nbLoop; ++i) {
-        notes[i] = pitches[i]===null ? null : createNote(pitches[i]);
+        notes[i] = pitches[i]===null ? null : createNote(pitches[i], nbPitch);
       }
       
       var triggerLoop = function(i) {
