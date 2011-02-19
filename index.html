@@ -17,16 +17,13 @@
   </head>
   <body>
     <h2>Random melody - proof of concept</h2>
-    <canvas id="sketch"></canvas>
+    <canvas id="player1"></canvas>
+    <canvas id="player2"></canvas>
     <script type="text/javascript">
       
-      var playTime = 1000;
-      
-      // ton = [1, 3, 5, 6, 8, 10, 12] -> do re mi fa sol la si
-      var freqGamme = function(refFreq, octave, ton) {
-        return refFreq * Math.pow(2, octave-3+(ton-10)/12);
+      var freqScale = function(refFreq, octave, pitch) {
+        return refFreq * Math.pow(2, octave-3+(pitch-10)/12);
       }
-      
       var generate = function(params) {
         return jsfx.generate(jsfxlib.arrayToParams(params));
       }
@@ -39,132 +36,196 @@
         }
         return data;
       }
-      
       var createMelody = function(freq) {
         var data1 = generate(["synth",1,0.3000,0.1000,0.3000,1.3260,0.2240,20.0000,freq,2000.0000,0.0000,0.0000,0.0000,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000]);
         var data2 = generate(["saw",1,0.1500,0.1000,0.3000,0.3260,0.2240,20.0000,freq,2000.0000,0.0000,0.0000,0.0300,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000]);
         return audio.make(mix(data1, data2));
       }
       
-      var note = function(octave, ton) {
-        return createMelody(freqGamme(440, octave, ton));
+    // Graphic
+    
+    var Player = function(canvas, pitches, o) {
+      var player = this;
+      
+      var bpm =  o&&o.bpm? o.bpm : 280;
+      var nbPitch = o&&o.nbPitch? o.nbPitch : 16;
+      var nbLoop = o&&o.nbLoop? o.nbLoop : 32;
+      var paused = true;
+      
+      player.play = function() {
+        paused = false;
+      }
+      player.stop = function() {
+        paused = true;
+      }
+      
+      // number all notes from 0 to n : 
+      // do=0 re=1 mi=2 fa sol la si do re mi fa sol la si ...
+      var createNote = function(pitch) {
+        if(pitch<0 || pitch>=nbPitch) return null;
+        var octave = 4;
+        while(pitch>5) {
+          pitch -= 5;
+          octave ++;
+        }
+        var pitchsOctave = [1, 3, 5, 6, 8, 10];
+        return createMelody(freqScale(440, octave, pitchsOctave[pitch]));
       }
       
       var notes = [];
-      var tonsOctave = [1, 3, 5, 6, 8, 10, 12] // do re mi fa sol la si
-      
-      var randomOctave = function() {
-        return tonsOctave[Math.floor(Math.random()*tonsOctave.length)];
-      }
-      var randomTon = function() {
-        return Math.random()>0.8 ? randomOctave() : Math.floor(11*Math.random()+1);
+      for(var i=0; i<nbLoop; ++i) {
+        notes[i] = pitches[i]===null ? null : createNote(pitches[i]);
       }
       
+      var triggerLoop = function(i) {
+        if(notes[i]) notes[i].play();
+      }
+      
+      var processingInstance = new Processing(canvas, function($p) {
+        
+        // States
+        var cursor; 
+        var currentLoop;
+        
+        // layout
+        var width = 500;
+        var height = 500;
+        var playCenterRadius =  100;
+        var ambiantSpace =  0; // Future
+        var stepHauteur =  18;
+        var bassSpace =  10; // Future
+        var bass =  playCenterRadius + ambiantSpace + stepHauteur*(nbPitch+1);
+        
+        var startTime;
+        
+        $p.setup = function() {
+          $p.size(width, height);
+          $p.strokeWeight(0);
+          $p.frameRate(30);
+          cursor = 0;
+          currentLoop = 0;
+          startTime = new Date().getTime();
+          drawEnv();
+        };
+        
+        $p.draw = function() {
+          if(!paused) {
+            drawEnv();
+            drawCursor();
+          
+            if(cursor>currentLoop) {
+              triggerLoop(currentLoop % nbLoop);
+              currentLoop ++;
+            }
+            cursor = ((new Date().getTime()-startTime)*bpm)/60000;
+          }
+        }
+        
+        $p.mousePressed = function() {
+          if(playControlHover()) {
+            if(paused) player.play();
+            else player.stop();
+            $p.setup();
+          }
+        }
+        
+        $p.mouseMoved = function() {
+          drawPlayerControl();
+        }
+        
+        var playControlHover = function() {
+          var dx = $p.width/2-$p.mouseX;
+          var dy = $p.height/2-$p.mouseY;
+          return (playCenterRadius*playCenterRadius) > 4*(dx*dx+dy*dy);
+        }
+        
+        var drawPlayerControl = function() {
+          var hover = playControlHover();
+          var centerX=$p.width/2, centerY=$p.height/2;
+          $p.noStroke();
+          if(hover)
+            $p.fill(150, 150, 200);
+          else
+            $p.fill(200, 200, 250);
+          $p.ellipse(centerX, centerY, playCenterRadius, playCenterRadius);
+          $p.strokeWeight(2);
+          if(hover) {
+            $p.fill(190, 190, 250);
+            $p.stroke(200, 200, 255);
+          }
+          else {
+            $p.fill(170, 170, 230);
+            $p.stroke(150, 150, 200);
+          }
+          
+          if(hover && !paused || !hover && paused)
+            $p.rect(centerX-20, centerY-20, 40, 40);
+          else
+            $p.triangle( centerX-10, centerY-20, centerX-10, centerY+20, centerX+20, centerY );
+        }
+        
+        var loopStepRad =  2*Math.PI/nbLoop;
+        
+        var drawCursor = function() {
+          $p.strokeWeight(2);
+          $p.stroke(210, 40, 40);
+          var step =  cursor*loopStepRad;
+          var x1 =  $p.width/2 + (playCenterRadius+ambiantSpace)*Math.cos(step) / 2;
+          var y1 =  $p.height/2 + (playCenterRadius+ambiantSpace)* Math.sin(step) / 2;
+          var x2 =  $p.width/2 + (bass/2)*Math.cos(step);
+          var y2 =  $p.height/2 + (bass/2)* Math.sin(step);
+          $p.line(x1, y1, x2, y2);
+        }
+        
+        var drawEnv = function() {
+          var centerX =  $p.width/2,centerY =  $p.height/2;
+          // Bass area
+          $p.noStroke();
+          $p.fill(100);
+          $p.ellipse(centerX, centerY, bass+bassSpace, bass+bassSpace);
+          // Notes area
+          $p.fill(255);
+          $p.ellipse(centerX, centerY, bass, bass);
+          // Lines
+          $p.noFill();
+          // Loop lines
+          $p.strokeWeight(1);
+          $p.stroke(240);
+          for(var i = 0;  i<nbLoop;  ++i) {
+            var step =  i*loopStepRad;
+            var x =  centerX + (bass/2)*Math.cos(step);
+            var y =  centerY + (bass/2)* Math.sin(step);
+            $p.line(centerX, centerY, x, y);
+          }
+          $p.strokeWeight(1);
+          $p.stroke(210);
+          // Partition lines
+          for(var i = 1;  i<=nbPitch;  ++i) {
+            var dist =  playCenterRadius + ambiantSpace + stepHauteur*i;
+            $p.ellipse(centerX, centerY, dist, dist);
+          }
+          // Ambient area
+          $p.noStroke();
+          $p.fill(200, 240, 200);
+          $p.ellipse(centerX, centerY, playCenterRadius+ambiantSpace, playCenterRadius+ambiantSpace);
+          
+          // center player control
+          drawPlayerControl();
+          
+        }
+      });
+    }
+      
+      var notes = [];
       for(var i=0; i<32; ++i) {
         if(i%2==1 && Math.random()>0.2 || i%4==0 && Math.random()>0.8)
-          notes.push(null);// escape most of even beat
+          notes.push(null); // escape most of even beat and some each 4 steps
         else
-          notes.push(note(5+(Math.random()>0.8 ? 1 : 0), randomTon()));
+          notes.push(Math.floor(Math.random()*16));
       }
-      
-      var triggerLoop = function(i, size) {
-        i = i % size;
-        if(notes[i])
-          notes[ i % size ].play();
-      }
-      
-      
-    // Graphic
     
-    var processingInstance = new Processing(document.getElementById('sketch'), function($p) {
-      var bpm =  280;
-      var nbNotes =  16;
-      var nbLoop =  32;
-      
-      var cursor =  0; 
-      var paused =  false;
-      var currentLoop =  0;
-      
-      var playCenterRadius =  100;
-      var ambiantSpace =  40;
-      var stepHauteur =  18;
-      var bassSpace =  30;
-      var bass =  playCenterRadius + ambiantSpace + stepHauteur*(nbNotes+1);
-      
-      $p.setup = function() {
-        $p.size(500, 500);
-        $p.strokeWeight(0);
-        $p.frameRate(30);
-      };
-      
-      $p.draw = function() {
-        drawEnv();
-        drawCursor();
-      
-        if(cursor>currentLoop) {
-          triggerLoop(currentLoop, nbLoop);
-          currentLoop ++;
-        }
-      
-        if(!paused) {
-        cursor = ($p.millis()*bpm)/60000;
-        }
-      }
-      
-      var loopStepRad =  2*Math.PI/nbLoop;
-      
-      var drawCursor = function() {
-        $p.strokeWeight(2);
-        $p.stroke(210, 40, 40);
-        var step =  cursor*loopStepRad;
-        var x1 =  $p.width/2 + (playCenterRadius+ambiantSpace)*Math.cos(step) / 2;
-        var y1 =  $p.height/2 + (playCenterRadius+ambiantSpace)* Math.sin(step) / 2;
-        var x2 =  $p.width/2 + (bass/2)*Math.cos(step);
-        var y2 =  $p.height/2 + (bass/2)* Math.sin(step);
-        $p.line(x1, y1, x2, y2);
-      }
-      
-      var drawEnv = function() {
-        var centerX =  $p.width/2,centerY =  $p.height/2;
-        // Bass area
-        $p.noStroke();
-        $p.fill(100);
-        $p.ellipse(centerX, centerY, bass+bassSpace, bass+bassSpace);
-        // Notes area
-        $p.fill(255);
-        $p.ellipse(centerX, centerY, bass, bass);
-        // Lines
-        $p.noFill();
-        // Loop lines
-        $p.strokeWeight(1);
-        $p.stroke(240);
-        for(var i = 0;  i<nbLoop;  ++i) {
-          var step =  i*loopStepRad;
-          var x =  centerX + (bass/2)*Math.cos(step);
-          var y =  centerY + (bass/2)* Math.sin(step);
-          $p.line(centerX, centerY, x, y);
-        }
-        $p.strokeWeight(1);
-        $p.stroke(210);
-        // Partition lines
-        for(var i = 1;  i<=nbNotes;  ++i) {
-          var dist =  playCenterRadius + ambiantSpace + stepHauteur*i;
-          $p.ellipse(centerX, centerY, dist, dist);
-        }
-        // Ambient area
-        $p.noStroke();
-        $p.fill(200, 240, 200);
-        $p.ellipse(centerX, centerY, playCenterRadius+ambiantSpace, playCenterRadius+ambiantSpace);
-      
-        $p.noStroke();
-        $p.fill(200, 200, 250);
-        $p.ellipse(centerX, centerY, playCenterRadius, playCenterRadius);
-        $p.fill(170, 170, 230);
-        $p.strokeWeight(2);
-        $p.stroke(150, 150, 200);
-        $p.triangle( centerX-10, centerY-20, centerX-10, centerY+20, centerX+20, centerY );
-      }
-    });
+    new Player(document.getElementById('player1'), notes);
+    new Player(document.getElementById('player2'), notes);
     
     </script>
   </body>
