@@ -29,6 +29,8 @@
       var generate = function(params) {
         return jsfx.generate(jsfxlib.arrayToParams(params));
       }
+      
+      // TODO : take more than 2 arguments instead :)
       var mix = function(a, b) {
         var data = new Array(Math.max(a.length, b.length));
         for(var d=0; d<a.length||d<b.length; ++d) {
@@ -46,8 +48,7 @@
       
       // number all notes from 0 to n : 
       // do=0 re=1 mi=2 fa sol la si do re mi fa sol la si ...
-      var createNote = function(pitch, maxPitch) {
-        if(pitch<0 || pitch>=maxPitch) return null;
+      var createNote = function(pitch) {
         var octave = 4;
         while(pitch>5) {
           pitch -= 5;
@@ -59,12 +60,20 @@
     
     // Melodic Player
     
+    /**
+     * canvas : the canvas dom object
+     * pitches : an Array of notes. each index of this array represent a loop instant.
+     *           each value of this array is : a number OR an array of number.
+     *           a number represent the pitch of the note.
+     *           If one loop instant has an array of pitch, two pitches will be played at the same time.
+     *          
+     */
     var Player = function(canvas, pitches, o) {
       var player = this;
       
       var bpm =  o&&o.bpm? o.bpm : 280;
       var nbPitch = o&&o.nbPitch? o.nbPitch : 16;
-      var nbLoop = o&&o.nbLoop? o.nbLoop : 32;
+      var nbLoop = pitches.length;
       var paused = true;
       
       player.play = function() {
@@ -74,16 +83,40 @@
         paused = true;
       }
       
+      // Clean pitches
+      for(var i=0; i<nbLoop; ++i) {
+        var p = pitches[i];
+        var ens = [];
+        if(p!==null) {
+          if(typeof(p)=="number")
+            ens = [p];
+          else if(p.length) {
+            for(var j=0; j<p.length; ++j) {
+              if(typeof(p[j])=="number" && p[j]>=0 && p[j]<nbPitch)
+                ens.push(p[j]);
+            }
+          }
+        }
+        pitches[i] = ens;
+      }
+      
       var notes = [];
       for(var i=0; i<nbLoop; ++i) {
-        notes[i] = pitches[i]===null ? null : createNote(pitches[i], nbPitch);
+        var p = pitches[i];
+        var ens = [];
+        for(var j=0; j<p.length; ++j) {
+          ens.push(createNote(p[j]));
+        }
+        notes[i] = ens;
       }
       
-      var triggerLoop = function(i) {
-        if(notes[i]) notes[i].play();
+      var triggerLoop = function(loop) {
+        var ens = notes[loop];
+        for(var i=0; ens && i<ens.length; ++i)
+          ens[i].play();
       }
       
-      var processingInstance = new Processing(canvas, function($p) {
+      player.processing = new Processing(canvas, function($p) {
         
         // States
         var cursor; 
@@ -179,6 +212,25 @@
           $p.line(x1, y1, x2, y2);
         }
         
+        var drawNotes = function() {
+          var centerX=$p.width/2, centerY=$p.height/2;
+          $p.noStroke();
+          $p.fill(240, 100, 100);
+          for(var loop=0; loop<pitches.length; loop++) {
+            var loopNotes = pitches[loop];
+            var loopRad =  loop*loopStepRad;
+            for(var i = 0; i<loopNotes.length; ++i) {
+              var dist =  (playCenterRadius + ambiantSpace + stepHauteur*(1+loopNotes[i]))/2;
+              var x =  centerX + dist*Math.cos(loopRad);
+              var y =  centerY + dist*Math.sin(loopRad);
+              if(loop==Math.floor((cursor+0.5))%nbLoop)
+                $p.ellipse(x, y, 10, 10);
+              else
+                $p.ellipse(x, y, 4, 4);
+            }
+          }
+        }
+        
         var drawEnv = function() {
           var centerX =  $p.width/2,centerY =  $p.height/2;
           // Bass area
@@ -202,7 +254,7 @@
           $p.strokeWeight(1);
           $p.stroke(210);
           // Partition lines
-          for(var i = 1;  i<=nbPitch;  ++i) {
+          for(var i = 0;  i<=nbPitch;  ++i) {
             var dist =  playCenterRadius + ambiantSpace + stepHauteur*i;
             $p.ellipse(centerX, centerY, dist, dist);
           }
@@ -214,6 +266,7 @@
           // center player control
           drawPlayerControl();
           
+          drawNotes();
         }
       });
     }
@@ -222,10 +275,14 @@
     
     var notes = [];
       for(var i=0; i<32; ++i) {
-        if(i%2==1 && Math.random()>0.2 || i%4==0 && Math.random()>0.8)
-          notes.push(null); // escape most of even beat and some each 4 steps
-        else
-          notes.push(Math.floor(Math.random()*16));
+        var ens = []
+        if( !(i%2==1 && Math.random()>0.2 || i%4==0 && Math.random()>0.8) ) {
+          ens.push(Math.floor(Math.random()*16));
+          while(Math.random()>0.9) {
+            ens.push(Math.floor(Math.random()*16));
+          }
+        }
+        notes.push(ens);
       }
     
     var player = new Player(document.getElementById('player1'), notes);
