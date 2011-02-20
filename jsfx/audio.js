@@ -23,14 +23,21 @@ var audio = {};
                        ByteRate,BlockAlign,BitsPerSample,"data",l,data],"s4s4224422s4s");
     };
     
+    this.makeData64 = function(arr) {
+      return waveTag + btoa(constructWave(arrayToData(arr)));
+    }
+    this.data64ToAudio = function(data64) {
+      return new Audio(data64);
+    }
+    
     // creates an audio object from sample data
     this.make = function(arr){
-        return new Audio(waveTag + btoa(constructWave(arrayToData(arr))))
+        return this.data64ToAudio(this.makeData64(arr));
     };
     
     // creates a wave file for downloading
     this.makeWaveFile = function(arr){
-        dataToFile(waveTag + btoa(constructWave(arrayToData(arr))))
+        dataToFile(this.makeData64(arr))
     };
     
     //////////////////////
