@@ -1,94 +1,178 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8"> 
+    <link href='http://fonts.googleapis.com/css?family=Droid+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
     <link href='http://fonts.googleapis.com/css?family=Droid+Sans:regular,bold' rel='stylesheet' type='text/css'>
     <style>
       html, body {
         background: rgb(240, 240, 240);
+        font-family: 'Droid Sans', arial, serif;
       }
       h1, h2, h3, h4, h5, h6 {
-        font-family: 'Droid Sans', arial, serif;
+        font-family: 'Droid Serif', arial, serif;
         text-align: center;
       }
       
-      .player-vote {
-        display: table;
-        margin: 0 auto;
-        width: 700px;
-      }
-      .player-vote .choices {
-        width: 100%;
-        padding: 25% 0;
-        vertical-align: middle;
+      header, footer {
+        display: block;
       }
       
-      .player-vote canvas, .player-vote .choices {
+      a {
+        color: #222;
+      }
+      a:hover {
+        color: #555;
+      }
+      
+      #container {
+        width: 700px;
+        margin: 0 auto;
+      }
+      
+      #main {
+        display: table;
+        width: 100%;
+        background: rgb(240, 240, 240);
+        margin: 10px 0;
+        overflow: hidden;
+      }
+      #main .choices {
+        width: 100%;
+        padding-top: 24%;
+        vertical-align: middle;
+      }
+      #main canvas {
+        margin: 10px;
+      }
+      #main canvas, #main .choices {
         display: table-cell;
         vertical-align: top;
       }
       
-      ul.choices {
+      .choices ul {
         padding: 0;
         list-style: none;
       }
-      ul.choices li {
-        margin: 10px;
+      .choices li {
+        margin: 20px 0;
         border-radius: 10px;
         border: 2px solid black;
         background: white;
         text-align: center;
-        font-size: 1.4em;
+        font-size: 1.3em;
         font-family: 'Droid Sans', arial, serif;
         font-weight: bold;
       }
-      ul.choices li a {
+      .choices li a {
         padding: 10px;
         display: block;
         text-decoration: none;
         color: #333;
       }
       
-      ul.choices li.like:hover {
+      .choices li.like:hover {
         background: #efe;
         border-color: #090;
       }
-      ul.choices li.dislike:hover {
+      .choices li.dislike:hover {
         background: #fee;
         border-color: #900;
       }
       
-      ul.choices li.like a:before, 
-      ul.choices li.like a:after {
+      .choices li.like a:before, 
+      .choices li.like a:after {
         content: '\2665';
         margin: 0 10px;
       }
-      ul.choices li.like a:hover {
+      .choices li.like a:hover {
         color: #3a1;
       }
-      ul.choices li.dislike a:hover {
+      .choices li.dislike a:hover {
         color: #c00;
       }
+      
+      .choices.hidden {
+        opacity: 0;
+      }
+      .choices li {
+        -webkit-transform: translate(300px, 0);
+      }
+      .choices, .choices li {
+        opacity: 1;
+        -webkit-transform: translate(0px, 0);
+        -webkit-transition-duration: 2s;
+        -moz-transition-duration: 2s;
+        transition-duration: 2s;
+      }
+      
+      .phonetic {
+        font-family: mono;
+        font-size: 0.6em;
+        opacity: 0.2;
+        font-weight: bold;
+      }
+      
+      .description {
+        font-style: italic;
+        color: #333;
+        padding: 10px;
+        border: 0px dashed rgba(0,0,0,0.2);
+        border-width: 2px 0;
+      }
+      
+      #loading {
+        color: #999;
+      }
+      
+      footer {
+        text-align: center;
+      }
     </style>
-    <title>POC random melody</title>
+    <title>♪ Social Melodic</title>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
     <script type="text/javascript" src="jsfx/audio.js"></script>
     <script type="text/javascript" src="jsfx/jsfx.js"></script>
-    <script type="text/javascript" src="melody-generator.js"></script>
     <script type="text/javascript" src="melody-utils.js"></script>
     <script type="text/javascript" src="melody-player.js"></script>
+    <script type="text/javascript" src="melody-generator.js"></script>
     <script type="text/javascript" src="loader.js"></script>
     <script type="text/javascript" src="processing-1.0.0.min.js"></script>
   </head>
   
   <body>
-    <h1>Social Melodic</h1>
-    <div class="player-vote">
-      <canvas id="player1"></canvas>
-      <ul class="choices">
-        <li class="like"><a href="#">I like</a></li>
-        <li class="dislike"><a href="#">I don't like</a></li>
-      </ul>
-    <div>
+    <div id="container">
+      <h1>♪ Social Melodic <span class="phonetic">[səʊʃl̩ mɨˈlɑɾɪk]</span></h1>
+      <h2>a human-based melody generator</h2>
+      
+      
+      <header class="description">
+      Social melodic is a human-based genetic algorithm. 
+      People, through their choices, affect the evolution of melodies. 
+      Melodies will undergo a series of mutation, 
+      and continue to grow and improve over generations.<br/>
+      The more of you, the more changes will see significant.
+      </header>
+      
+      <div id="loading">
+        <h2><img src="ajax-loader.gif" /> Loading...</h2> 
+      </div>
+      
+      <div id="main" class="player-vote" style="display: none;">
+        <canvas id="player"></canvas>
+        <div class="choices hidden">
+          <ul>
+            <li class="like"><a href="#">I like</a></li>
+            <li class="dislike"><a href="#">I don't like</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <footer>
+        <a href="http://grenlibre.fr/">grenlibre.fr</a> - Gaetan Renaudeau - 2011
+      </footer>
+      
+    </div>
     
     <script type="text/javascript">
 $(function(){
@@ -110,8 +194,14 @@ $(function(){
       notes.push(ens);
     }
     
+    var canvas =  document.getElementById('player');
+    
+    $(canvas).bind('loop', function(e, loop){
+      if(loop==10) $('.choices').removeClass('hidden');
+    });
+    
     new melody.Player({
-      canvas: document.getElementById('player1'),
+      canvas: canvas,
       melody: {
         notes: notes,
         generator: new melody.Generator([
@@ -119,7 +209,10 @@ $(function(){
           ["saw",1.0000,0.200,0.0230,0.0600,0.2280,0.3880,20.0000,null,2000.0000,-0.0800,-0.0880,0.0000,18.0542,0.1199,-0.2620,-0.0640,0.0000,0.0855,0.0000,0.0000,0.0500,0.0420,0.7490,0.1400,0.5020,0.3160,-0.4000],
           ["sine",0.0000,0.1,0.0000,0.2580,0.7770,0.5020,20.0000,null,1984.0000,0.0000,0.0000,0.0000,7.9763,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,1.0000,0.0000,0.0000,0.0000,0.0000]])
       }
-    })//.play();
+    }).play();
+    
+    $('#loading').hide();
+    $('#main').show();
   });
       
 });

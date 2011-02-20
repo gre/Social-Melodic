@@ -56,6 +56,7 @@ melody.Player = function(o) {
   }
   
   var triggerLoop = function(loop) {
+    $(canvas).trigger('loop', [loop]);
     if(notes[loop]) notes[loop].play();
   }
   
@@ -67,11 +68,11 @@ melody.Player = function(o) {
     var currentLoop;
     
     // layout
-    var width = 500;
-    var height = 500;
-    var playCenterRadius =  100;
+    var width = 450;
+    var height = 450;
+    var playCenterRadius =  80;
     var ambiantSpace =  0; // Future
-    var stepHauteur =  18;
+    var stepHauteur =  20;
     var bassSpace =  10; // Future
     var bass =  playCenterRadius + ambiantSpace + stepHauteur*(nbPitch+1);
     
@@ -84,6 +85,7 @@ melody.Player = function(o) {
       cursor = 0;
       currentLoop = 0;
       startTime = new Date().getTime();
+      $p.background(240);
       drawEnv();
     };
     
@@ -113,8 +115,8 @@ melody.Player = function(o) {
     }
     
     var playControlHover = function() {
-      var dx = $p.width/2-$p.mouseX;
-      var dy = $p.height/2-$p.mouseY;
+      var dx = $p.width/2 - $p.mouseX;
+      var dy = $p.height/2 - $p.mouseY;
       return (playCenterRadius*playCenterRadius) > 4*(dx*dx+dy*dy);
     }
     
@@ -123,22 +125,21 @@ melody.Player = function(o) {
       var centerX=$p.width/2, centerY=$p.height/2;
       $p.noStroke();
       if(hover)
-        $p.fill(150, 150, 200);
+        $p.fill(60);
       else
-        $p.fill(200, 200, 250);
+        $p.fill(100);
       $p.ellipse(centerX, centerY, playCenterRadius, playCenterRadius);
-      $p.strokeWeight(2);
       if(hover) {
-        $p.fill(190, 190, 250);
-        $p.stroke(200, 200, 255);
+        $p.fill(240);
+        $p.strokeWeight(2);
+        $p.stroke(0);
       }
       else {
-        $p.fill(170, 170, 230);
-        $p.stroke(150, 150, 200);
+        $p.fill(180);
       }
       
       if(!paused)
-        $p.rect(centerX-20, centerY-20, 40, 40);
+        $p.rect(centerX-15, centerY-15, 30, 30);
       else
         $p.triangle( centerX-10, centerY-20, centerX-10, centerY+20, centerX+20, centerY );
     }
@@ -181,7 +182,6 @@ melody.Player = function(o) {
     }
     
     var drawEnv = function() {
-      $p.background(240);
       
       var centerX =  $p.width/2,centerY =  $p.height/2;
       // Bass area

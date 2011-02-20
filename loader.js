@@ -11,7 +11,7 @@ var Loader = function(callback){
       main();
     else {
       $(document).one('webWorkerReady', main);
-      setTimeout(main, 800); // Max time before web worker state ignoring
+      setTimeout(main, 500); // Max time before web worker state ignoring
     }
   })
 };
