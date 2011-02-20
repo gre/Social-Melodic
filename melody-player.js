@@ -136,7 +136,7 @@ melody.Player = function(o) {
         $p.stroke(150, 150, 200);
       }
       
-      if(hover && !paused || !hover && paused)
+      if(!paused)
         $p.rect(centerX-20, centerY-20, 40, 40);
       else
         $p.triangle( centerX-10, centerY-20, centerX-10, centerY+20, centerX+20, centerY );
