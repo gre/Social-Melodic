@@ -1,5 +1,5 @@
-var melody = {};
-melody.utils = {};
+if(typeof(melody)=='undefined') melody = {};
+if(!melody.utils) melody.utils = {};
 (function(melodyutils){
   
   var arrayToParams = function(pararr){

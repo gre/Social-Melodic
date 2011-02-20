@@ -10,354 +10,54 @@
         margin: 0 auto;
       }
     </style>
+    <title>POC random melody</title>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
     <script type="text/javascript" src="jsfx/audio.js"></script>
     <script type="text/javascript" src="jsfx/jsfx.js"></script>
+    <script type="text/javascript" src="melody-generator.js"></script>
     <script type="text/javascript" src="melody-utils.js"></script>
+    <script type="text/javascript" src="melody-player.js"></script>
+    <script type="text/javascript" src="loader.js"></script>
     <script type="text/javascript" src="processing-1.0.0.min.js"></script>
   </head>
+  
   <body>
-    <h2>Random melody - proof of concept</h2>
     <canvas id="player1"></canvas>
     <canvas id="player2"></canvas>
+    
     <script type="text/javascript">
-    (function(){
-      if(navigator.userAgent.match('Chrome') && navigator.userAgent.match('Mac')) {
-        alert('There is an issue on Chrome+Mac with jsfx library. (Noisy sounds..) Please go on Safari or Firefox until we fix it.');
-        return;
+$(function(){
+  if(navigator.userAgent.match('Chrome') && navigator.userAgent.match('Mac'))
+    return alert('There is an issue on Chrome+Mac with jsfx library. (Noisy sounds..) Please go on Safari or Firefox until we fix it.');
+  
+  
+  // POC
+  new Loader(function(){
+    var notes = [];
+    for(var i=0; i<32; ++i) {
+      var ens = []
+      if( !(i%2==1 && Math.random()>0.2 || i%4==0 && Math.random()>0.8) ) {
+        ens.push(Math.floor(Math.random()*16));
+        while(Math.random()>0.85) {
+          ens.push(Math.floor(Math.random()*16));
+        }
       }
-      
-      // Melody generator
-      
-      var MelodyGenerator = function(primitives) {
-        var webWorkerReady = false;
-        if(!!window.Worker) {
-          var worker = new Worker("worker.js");
-          if(worker) {
-            // small test
-            worker.onmessage = function(a){
-              if(a.data && a.data.indexOf('data:audio')==0) {
-                webWorkerReady = true;
-                $(document).trigger('webWorkerReady');
-              }
-              worker.terminate();
-            };
-            worker.onerror = function(arguments){
-              webWorkerReady = false;
-              worker.terminate();
-            };
-            worker.postMessage(["sine",0,0,0,0,0,0,20,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
-          }
-        }
-        
-        var freqScale = function(refFreq, octave, pitch) {
-          return refFreq * Math.pow(2, octave-3+(pitch-10)/12);
-        }
-        var pitchToFreq = function(pitch) {
-            var octave = 4;
-            while(pitch>5) {
-              pitch -= 5;
-              octave ++;
-            }
-            return freqScale(440, octave, [1, 3, 5, 6, 8, 10][pitch]);
-        }
-        
-        
-        var applyFreqToPrimitives = function(freq) {
-          for(var p=0; p<primitives.length; ++p) {
-            primitives[p][8] = freq;
-          }
-        }
-        
-        var mixPrimitives = function(all, callback) {
-          if(webWorkerReady) {
-            var worker = new Worker("worker.js");
-            worker.onmessage = function(e) {
-              callback(audio.data64ToAudio(e.data));
-            }
-            worker.postMessage(all);
-          }
-          else {
-            melody.utils.mixPrimitives(all, function(res){
-              callback(audio.make(res));
-            });
-          }
-        }
-
-        // number all notes from 0 to n : 
-        // do=0 re=1 mi=2 fa sol la si do re mi fa sol la si ...
-        this.createNote = function(pitches, callback) {
-          if(typeof(pitches)=="number") {
-            pitches = [pitches];
-          }
-          if(pitches.length==0) return null;
-          var all = [];
-          for(var i=0; i<pitches.length; ++i) {
-            var pitch = pitches[i];
-            applyFreqToPrimitives(pitchToFreq(pitch));
-            for(var p=0; p<primitives.length; ++p) {
-              var copy = [];
-              var primitive = primitives[p];
-              for(var j=0; j<primitive.length; ++j)
-                copy[j] = primitive[j];
-              all.push(copy);
-            }
-          }
-          mixPrimitives(all, callback);
-        }
-        
-      }
-      
-      
-    var generator = new MelodyGenerator([
-      ["synth",1,0.4000,0.1000,0.3000,1.3260,0.2240,20.0000,null,2000.0000,0.0000,0.0000,0.0000,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000],
-      ["saw",1.0000,0.200,0.0230,0.0600,0.2280,0.3880,20.0000,null,2000.0000,-0.0800,-0.0880,0.0000,18.0542,0.1199,-0.2620,-0.0640,0.0000,0.0855,0.0000,0.0000,0.0500,0.0420,0.7490,0.1400,0.5020,0.3160,-0.4000],
-      ["sine",0.0000,0.1,0.0000,0.2580,0.7770,0.5020,20.0000,null,1984.0000,0.0000,0.0000,0.0000,7.9763,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,1.0000,0.0000,0.0000,0.0000,0.0000]]);
-    
-    // Melodic Player
-    
-    /**
-     * canvas : the canvas dom object
-     * pitches : an Array of notes. each index of this array represent a loop instant.
-     *           each value of this array is : a number OR an array of number.
-     *           a number represent the pitch of the note.
-     *           If one loop instant has an array of pitch, two pitches will be played at the same time.
-     *          
-     */
-    var Player = function(canvas, pitches, o) {
-      var player = this;
-      
-      var bpm =  o&&o.bpm? o.bpm : 280;
-      var nbPitch = o&&o.nbPitch? o.nbPitch : 16;
-      var nbLoop = pitches.length;
-      var paused = true;
-      
-      player.play = function() {
-        paused = false;
-      }
-      player.stop = function() {
-        paused = true;
-      }
-      
-      // Clean pitches
-      for(var i=0; i<nbLoop; ++i) {
-        var p = pitches[i];
-        var ens = [];
-        if(p!==null) {
-          if(typeof(p)=="number")
-            ens = [p];
-          else if(p.length) {
-            for(var j=0; j<p.length; ++j) {
-              if(typeof(p[j])=="number" && p[j]>=0 && p[j]<nbPitch)
-                ens.push(p[j]);
-            }
-          }
-        }
-        pitches[i] = ens;
-      }
-      
-      var notes = [];
-      
-      for(var i=0; i<nbLoop; ++i) {
-        (function(index){
-          generator.createNote(pitches[index], function(res) {
-            notes[index] = res;
-          });
-        }(i));
-      }
-      
-      var triggerLoop = function(loop) {
-        if(notes[loop]) notes[loop].play();
-      }
-      
-      player.processing = new Processing(canvas, function($p) {
-        
-        // States
-        var cursor; 
-        var currentLoop;
-        
-        // layout
-        var width = 500;
-        var height = 500;
-        var playCenterRadius =  100;
-        var ambiantSpace =  0; // Future
-        var stepHauteur =  18;
-        var bassSpace =  10; // Future
-        var bass =  playCenterRadius + ambiantSpace + stepHauteur*(nbPitch+1);
-        
-        var startTime;
-        
-        $p.setup = function() {
-          $p.size(width, height);
-          $p.strokeWeight(0);
-          $p.frameRate(30);
-          cursor = 0;
-          currentLoop = 0;
-          startTime = new Date().getTime();
-          drawEnv();
-        };
-        
-        $p.draw = function() {
-          if(!paused) {
-            drawEnv();
-            drawCursor();
-          
-            if(cursor>currentLoop) {
-              triggerLoop(currentLoop % nbLoop);
-              currentLoop ++;
-            }
-            cursor = ((new Date().getTime()-startTime)*bpm)/60000;
-          }
-        }
-        
-        $p.mousePressed = function() {
-          if(playControlHover()) {
-            if(paused) player.play();
-            else player.stop();
-            $p.setup();
-          }
-        }
-        
-        $p.mouseMoved = function() {
-          drawPlayerControl();
-        }
-        
-        var playControlHover = function() {
-          var dx = $p.width/2-$p.mouseX;
-          var dy = $p.height/2-$p.mouseY;
-          return (playCenterRadius*playCenterRadius) > 4*(dx*dx+dy*dy);
-        }
-        
-        var drawPlayerControl = function() {
-          var hover = playControlHover();
-          var centerX=$p.width/2, centerY=$p.height/2;
-          $p.noStroke();
-          if(hover)
-            $p.fill(150, 150, 200);
-          else
-            $p.fill(200, 200, 250);
-          $p.ellipse(centerX, centerY, playCenterRadius, playCenterRadius);
-          $p.strokeWeight(2);
-          if(hover) {
-            $p.fill(190, 190, 250);
-            $p.stroke(200, 200, 255);
-          }
-          else {
-            $p.fill(170, 170, 230);
-            $p.stroke(150, 150, 200);
-          }
-          
-          if(hover && !paused || !hover && paused)
-            $p.rect(centerX-20, centerY-20, 40, 40);
-          else
-            $p.triangle( centerX-10, centerY-20, centerX-10, centerY+20, centerX+20, centerY );
-        }
-        
-        var loopStepRad =  2*Math.PI/nbLoop;
-        
-        var drawCursor = function() {
-          $p.strokeWeight(2);
-          $p.stroke(210, 40, 40);
-          var step =  cursor*loopStepRad;
-          var x1 =  $p.width/2 + (playCenterRadius+ambiantSpace)*Math.cos(step) / 2;
-          var y1 =  $p.height/2 + (playCenterRadius+ambiantSpace)* Math.sin(step) / 2;
-          var x2 =  $p.width/2 + (bass/2)*Math.cos(step);
-          var y2 =  $p.height/2 + (bass/2)* Math.sin(step);
-          $p.line(x1, y1, x2, y2);
-        }
-        
-        var drawNotes = function() {
-          var centerX=$p.width/2, centerY=$p.height/2;
-          $p.noStroke();
-          for(var loop=0; loop<pitches.length; loop++) {
-            var loopNotes = pitches[loop];
-            var loopRad =  loop*loopStepRad;
-            for(var i = 0; i<loopNotes.length; ++i) {
-              var dist =  (playCenterRadius + ambiantSpace + stepHauteur*(1+loopNotes[i]))/2;
-              var x =  centerX + dist*Math.cos(loopRad);
-              var y =  centerY + dist*Math.sin(loopRad);
-              var weight = 4;
-              if(!paused && loop==Math.floor((cursor+0.5))%nbLoop) {
-                $p.fill(240, 100, 100);
-                var diff = Math.abs(Math.floor(cursor)+0.5-cursor);
-                weight += diff>0.5 ? 0 : diff*20;
-              }
-              else {
-                $p.fill(140, 100, 200);
-              }
-              $p.ellipse(x, y, weight, weight);
-            }
-          }
-        }
-        
-        var drawEnv = function() {
-          var centerX =  $p.width/2,centerY =  $p.height/2;
-          // Bass area
-          $p.noStroke();
-          $p.fill(100);
-          $p.ellipse(centerX, centerY, bass+bassSpace, bass+bassSpace);
-          // Notes area
-          $p.fill(255);
-          $p.ellipse(centerX, centerY, bass, bass);
-          // Lines
-          $p.noFill();
-          // Loop lines
-          $p.strokeWeight(1);
-          $p.stroke(240);
-          for(var i = 0;  i<nbLoop;  ++i) {
-            var step =  i*loopStepRad;
-            var x =  centerX + (bass/2)*Math.cos(step);
-            var y =  centerY + (bass/2)* Math.sin(step);
-            $p.line(centerX, centerY, x, y);
-          }
-          $p.strokeWeight(1);
-          $p.stroke(210);
-          // Partition lines
-          for(var i = 1;  i<=nbPitch;  ++i) {
-            var dist =  playCenterRadius + ambiantSpace + stepHauteur*i;
-            $p.ellipse(centerX, centerY, dist, dist);
-          }
-          // Ambient area
-          $p.noStroke();
-          $p.fill(200, 240, 200);
-          $p.ellipse(centerX, centerY, playCenterRadius+ambiantSpace, playCenterRadius+ambiantSpace);
-          
-          drawPlayerControl();
-          drawNotes();
-        }
-      });
+      notes.push(ens);
     }
     
-    // POC
-  
-  var _mainStarted = false;
-  var main = function(){
-    if(_mainStarted) return;
-    _mainStarted = true;
-    var notes = [];
-      for(var i=0; i<32; ++i) {
-        var ens = []
-        if( !(i%2==1 && Math.random()>0.2 || i%4==0 && Math.random()>0.8) ) {
-          ens.push(Math.floor(Math.random()*16));
-          while(Math.random()>0.85) {
-            ens.push(Math.floor(Math.random()*16));
-          }
-        }
-        notes.push(ens);
+    new melody.Player({
+      canvas: document.getElementById('player1'),
+      melody: {
+        notes: notes,
+        generator: new melody.Generator([
+          ["synth",1,0.4000,0.1000,0.3000,1.3260,0.2240,20.0000,null,2000.0000,0.0000,0.0000,0.0000,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000],
+          ["saw",1.0000,0.200,0.0230,0.0600,0.2280,0.3880,20.0000,null,2000.0000,-0.0800,-0.0880,0.0000,18.0542,0.1199,-0.2620,-0.0640,0.0000,0.0855,0.0000,0.0000,0.0500,0.0420,0.7490,0.1400,0.5020,0.3160,-0.4000],
+          ["sine",0.0000,0.1,0.0000,0.2580,0.7770,0.5020,20.0000,null,1984.0000,0.0000,0.0000,0.0000,7.9763,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,1.0000,0.0000,0.0000,0.0000,0.0000]])
       }
-    
-    var player = new Player(document.getElementById('player1'), notes);
-    player.play();
-  }
-  
-  if(!!window.Worker) {
-    $(document).bind('webWorkerReady', main);
-    setTimeout(main, 800);
-  }
-  else
-    main();
+    }).play();
+  });
       
-  }());
+});
     </script>
   </body>
 </html>
