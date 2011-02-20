@@ -60,6 +60,7 @@ melody.Player = function(o) {
   }
   
   player.processing = new Processing(canvas, function($p) {
+    $p.externals.sketch.options.isTransparent = true;
     
     // States
     var cursor; 
@@ -180,6 +181,8 @@ melody.Player = function(o) {
     }
     
     var drawEnv = function() {
+      $p.background(240);
+      
       var centerX =  $p.width/2,centerY =  $p.height/2;
       // Bass area
       $p.noStroke();

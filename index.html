@@ -1,13 +1,72 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link href='http://fonts.googleapis.com/css?family=Droid+Sans:regular,bold' rel='stylesheet' type='text/css'>
     <style>
       html, body {
-        background: #ccc;
+        background: rgb(240, 240, 240);
       }
-      canvas {
-        display: block;
+      h1, h2, h3, h4, h5, h6 {
+        font-family: 'Droid Sans', arial, serif;
+        text-align: center;
+      }
+      
+      .player-vote {
+        display: table;
         margin: 0 auto;
+        width: 700px;
+      }
+      .player-vote .choices {
+        width: 100%;
+        padding: 25% 0;
+        vertical-align: middle;
+      }
+      
+      .player-vote canvas, .player-vote .choices {
+        display: table-cell;
+        vertical-align: top;
+      }
+      
+      ul.choices {
+        padding: 0;
+        list-style: none;
+      }
+      ul.choices li {
+        margin: 10px;
+        border-radius: 10px;
+        border: 2px solid black;
+        background: white;
+        text-align: center;
+        font-size: 1.4em;
+        font-family: 'Droid Sans', arial, serif;
+        font-weight: bold;
+      }
+      ul.choices li a {
+        padding: 10px;
+        display: block;
+        text-decoration: none;
+        color: #333;
+      }
+      
+      ul.choices li.like:hover {
+        background: #efe;
+        border-color: #090;
+      }
+      ul.choices li.dislike:hover {
+        background: #fee;
+        border-color: #900;
+      }
+      
+      ul.choices li.like a:before, 
+      ul.choices li.like a:after {
+        content: '\2665';
+        margin: 0 10px;
+      }
+      ul.choices li.like a:hover {
+        color: #3a1;
+      }
+      ul.choices li.dislike a:hover {
+        color: #c00;
       }
     </style>
     <title>POC random melody</title>
@@ -22,8 +81,14 @@
   </head>
   
   <body>
-    <canvas id="player1"></canvas>
-    <canvas id="player2"></canvas>
+    <h1>Social Melodic</h1>
+    <div class="player-vote">
+      <canvas id="player1"></canvas>
+      <ul class="choices">
+        <li class="like"><a href="#">I like</a></li>
+        <li class="dislike"><a href="#">I don't like</a></li>
+      </ul>
+    <div>
     
     <script type="text/javascript">
 $(function(){
@@ -54,7 +119,7 @@ $(function(){
           ["saw",1.0000,0.200,0.0230,0.0600,0.2280,0.3880,20.0000,null,2000.0000,-0.0800,-0.0880,0.0000,18.0542,0.1199,-0.2620,-0.0640,0.0000,0.0855,0.0000,0.0000,0.0500,0.0420,0.7490,0.1400,0.5020,0.3160,-0.4000],
           ["sine",0.0000,0.1,0.0000,0.2580,0.7770,0.5020,20.0000,null,1984.0000,0.0000,0.0000,0.0000,7.9763,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,1.0000,0.0000,0.0000,0.0000,0.0000]])
       }
-    }).play();
+    })//.play();
   });
       
 });
