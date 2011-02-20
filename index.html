@@ -269,7 +269,6 @@
         var drawNotes = function() {
           var centerX=$p.width/2, centerY=$p.height/2;
           $p.noStroke();
-          $p.fill(240, 100, 100);
           for(var loop=0; loop<pitches.length; loop++) {
             var loopNotes = pitches[loop];
             var loopRad =  loop*loopStepRad;
@@ -277,10 +276,16 @@
               var dist =  (playCenterRadius + ambiantSpace + stepHauteur*(1+loopNotes[i]))/2;
               var x =  centerX + dist*Math.cos(loopRad);
               var y =  centerY + dist*Math.sin(loopRad);
-              if(!paused && loop==Math.floor((cursor+0.5))%nbLoop)
-                $p.ellipse(x, y, 10, 10);
-              else
-                $p.ellipse(x, y, 4, 4);
+              var weight = 4;
+              if(!paused && loop==Math.floor((cursor+0.5))%nbLoop) {
+                $p.fill(240, 100, 100);
+                var diff = Math.abs(Math.floor(cursor)+0.5-cursor);
+                weight += diff>0.5 ? 0 : diff*20;
+              }
+              else {
+                $p.fill(140, 100, 200);
+              }
+              $p.ellipse(x, y, weight, weight);
             }
           }
         }
