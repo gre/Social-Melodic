@@ -30,20 +30,28 @@
         return jsfx.generate(jsfxlib.arrayToParams(params));
       }
       
-      // TODO : take more than 2 arguments instead :)
-      var mix = function(a, b) {
-        var data = new Array(Math.max(a.length, b.length));
-        for(var d=0; d<a.length||d<b.length; ++d) {
-          var v1 = d<a.length ? a[d] : 0;
-          var v2 = d<b.length ? b[d] : 0;
-          data[d] = (v1 + v2)/2;
+      var mixArrays = function() {
+        var max = 0;
+        for(var a=0; a<arguments.length; ++a)
+          max = Math.max(max, arguments[a].length);
+        var data = new Array(max);
+        for(var d=0; d<max; ++d) {
+          var sum = 0;  
+          for(var a=0; a<arguments.length; ++a) {
+            var dataArg = arguments[a];
+            sum += (d<dataArg.length ? dataArg[d] : 0);
+          }
+          data[d] = sum/arguments.length;
         }
         return data;
       }
+      var createMelodyData = function(freq) {
+        return mixArrays(generate(["synth",1,0.4000,0.1000,0.3000,1.3260,0.2240,20.0000,freq,2000.0000,0.0000,0.0000,0.0000,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000]),
+        generate(["saw",1.0000,0.200,0.0230,0.0600,0.2280,0.3880,20.0000,freq,2000.0000,-0.0800,-0.0880,0.0000,18.0542,0.1199,-0.2620,-0.0640,0.0000,0.0855,0.0000,0.0000,0.0500,0.0420,0.7490,0.1400,0.5020,0.3160,-0.4000]),
+        generate(["sine",0.0000,0.1,0.0000,0.2580,0.7770,0.5020,20.0000,freq,1984.0000,0.0000,0.0000,0.0000,7.9763,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,1.0000,0.0000,0.0000,0.0000,0.0000]));
+      }
       var createMelody = function(freq) {
-        var data1 = generate(["synth",1,0.3000,0.1000,0.3000,1.3260,0.2240,20.0000,freq,2000.0000,0.0000,0.0000,0.0000,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000]);
-        var data2 = generate(["saw",1,0.1500,0.1000,0.3000,0.3260,0.2240,20.0000,freq,2000.0000,0.0000,0.0000,0.0300,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000]);
-        return audio.make(mix(data1, data2));
+        return audio.make(createMelodyData(freq));
       }
       
       // number all notes from 0 to n : 
@@ -55,7 +63,7 @@
           octave ++;
         }
         var pitchsOctave = [1, 3, 5, 6, 8, 10];
-        return createMelody(freqScale(440, octave, pitchsOctave[pitch]));
+        return createMelodyData(freqScale(440, octave, pitchsOctave[pitch]));
       }
     
     // Melodic Player
@@ -103,17 +111,15 @@
       var notes = [];
       for(var i=0; i<nbLoop; ++i) {
         var p = pitches[i];
-        var ens = [];
+        var args = [];
         for(var j=0; j<p.length; ++j) {
-          ens.push(createNote(p[j]));
+          args.push(createNote(p[j]));
         }
-        notes[i] = ens;
+        notes[i] = audio.make(mixArrays.apply(this, args));
       }
       
       var triggerLoop = function(loop) {
-        var ens = notes[loop];
-        for(var i=0; ens && i<ens.length; ++i)
-          ens[i].play();
+        notes[loop].play();
       }
       
       player.processing = new Processing(canvas, function($p) {
@@ -223,7 +229,7 @@
               var dist =  (playCenterRadius + ambiantSpace + stepHauteur*(1+loopNotes[i]))/2;
               var x =  centerX + dist*Math.cos(loopRad);
               var y =  centerY + dist*Math.sin(loopRad);
-              if(loop==Math.floor((cursor+0.5))%nbLoop)
+              if(!paused && loop==Math.floor((cursor+0.5))%nbLoop)
                 $p.ellipse(x, y, 10, 10);
               else
                 $p.ellipse(x, y, 4, 4);
@@ -254,7 +260,7 @@
           $p.strokeWeight(1);
           $p.stroke(210);
           // Partition lines
-          for(var i = 0;  i<=nbPitch;  ++i) {
+          for(var i = 1;  i<=nbPitch;  ++i) {
             var dist =  playCenterRadius + ambiantSpace + stepHauteur*i;
             $p.ellipse(centerX, centerY, dist, dist);
           }
@@ -278,7 +284,7 @@
         var ens = []
         if( !(i%2==1 && Math.random()>0.2 || i%4==0 && Math.random()>0.8) ) {
           ens.push(Math.floor(Math.random()*16));
-          while(Math.random()>0.9) {
+          while(Math.random()>0.85) {
             ens.push(Math.floor(Math.random()*16));
           }
         }
