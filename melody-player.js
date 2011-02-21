@@ -2,18 +2,24 @@ if(typeof(melody)=='undefined') melody = {};
 // Melodic Player
 
 /**
+ * bpm : loop per minute
+ * nbPitch : number of pitches (notes)
  * canvas : the canvas dom object
+ * width and height : player dimensions
  * melody.generator : the generator of notes
  * melody.notes : an Array of notes. each index of this array represent a loop instant.
  *           each value of this array is : a number OR an array of number.
  *           a number represent the pitch of the note.
- *           If one loop instant has an array of pitch, two pitches will be played at the same time.
- *          
+ *           pitches are values in the equal temperament (12-TET). pitch = 12*octave+tone
+ *           If one loop instant has an array of pitch, pitches will be played at the same time.
  */
 melody.Player = function(o) {
   var player = this;
   
   var canvas = o.canvas;
+  var background = o.background ? o.background : [240,240,240];
+  var width = o.width ? o.width : 450;
+  var height = o.height ? o.height : 450;
   var pitches = o.melody.notes;
   var generator = o.melody.generator;
   var bpm =  o&&o.bpm? o.bpm : 280;
@@ -68,12 +74,11 @@ melody.Player = function(o) {
     var currentLoop;
     
     // layout
-    var width = 450;
-    var height = 450;
     var playCenterRadius =  80;
     var ambiantSpace =  0; // Future
-    var stepHauteur =  20;
     var bassSpace =  10; // Future
+    
+    var stepHauteur = Math.floor( (Math.min(width, height) - playCenterRadius - ambiantSpace - bassSpace) / (nbPitch+1));
     var bass =  playCenterRadius + ambiantSpace + stepHauteur*(nbPitch+1);
     
     var startTime;
@@ -85,7 +90,7 @@ melody.Player = function(o) {
       cursor = 0;
       currentLoop = 0;
       startTime = new Date().getTime();
-      $p.background(240);
+      $p.background(background[0], background[1], background[2]);
       drawEnv();
     };
     
@@ -195,7 +200,7 @@ melody.Player = function(o) {
       $p.noFill();
       // Loop lines
       $p.strokeWeight(1);
-      $p.stroke(240);
+      $p.stroke(240, 240, 250);
       for(var i = 0;  i<nbLoop;  ++i) {
         var step =  i*loopStepRad;
         var x =  centerX + (bass/2)*Math.cos(step);
@@ -203,7 +208,7 @@ melody.Player = function(o) {
         $p.line(centerX, centerY, x, y);
       }
       $p.strokeWeight(1);
-      $p.stroke(210);
+      $p.stroke(230, 230, 240);
       // Partition lines
       for(var i = 1;  i<=nbPitch;  ++i) {
         var dist =  playCenterRadius + ambiantSpace + stepHauteur*i;

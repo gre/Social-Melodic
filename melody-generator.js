@@ -31,11 +31,11 @@ melody.Generator = function(primitives) {
   }
   var pitchToFreq = function(pitch) {
       var octave = 4;
-      while(pitch>5) {
-        pitch -= 5;
+      while(pitch>11) {
+        pitch -= 12;
         octave ++;
       }
-      return freqScale(440, octave, [1, 3, 5, 6, 8, 10][pitch]);
+      return freqScale(440, octave, pitch);
   }
   
   

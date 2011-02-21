@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8"> 
-    <link href='http://fonts.googleapis.com/css?family=Droid+Serif:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+    <meta charset="utf-8">
     <link href='http://fonts.googleapis.com/css?family=Droid+Sans:regular,bold' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Coda+Caption:800' rel='stylesheet' type='text/css'>
     <style>
       html, body {
         background: rgb(240, 240, 240);
         font-family: 'Droid Sans', arial, serif;
       }
       h1, h2, h3, h4, h5, h6 {
-        font-family: 'Droid Serif', arial, serif;
         text-align: center;
       }
       
@@ -39,13 +38,12 @@
       }
       #main .choices {
         width: 100%;
-        padding-top: 24%;
         vertical-align: middle;
       }
       #main canvas {
         margin: 10px;
       }
-      #main canvas, #main .choices {
+      #main .playerContainer, #main .choices {
         display: table-cell;
         vertical-align: top;
       }
@@ -72,12 +70,10 @@
       }
       
       .choices li.like:hover {
-        background: #efe;
-        border-color: #090;
+        border-color: #3a0;
       }
       .choices li.dislike:hover {
-        background: #fee;
-        border-color: #900;
+        border-color: #c00;
       }
       
       .choices li.like a:before, 
@@ -95,15 +91,19 @@
       .choices.hidden {
         opacity: 0;
       }
-      .choices li {
-        -webkit-transform: translate(300px, 0);
+      .choices.hidden li {
+        -webkit-transform: translate(300px, 0px);
+        -moz-transform: translate(300px, 0px);
+        transform: translate(300px, 0px);
       }
       .choices, .choices li {
         opacity: 1;
-        -webkit-transform: translate(0px, 0);
-        -webkit-transition-duration: 2s;
-        -moz-transition-duration: 2s;
-        transition-duration: 2s;
+        -webkit-transform: translate(0px, 0px);
+        -moz-transform: translate(0px, 0px);
+        transform: translate(0px, 0px);
+        -webkit-transition: 2s opacity, 2s -webkit-transform;
+        -moz-transition: 2s opacity, 2s -moz-transform;
+        transition: 2s opacity, 2s transform;
       }
       
       .phonetic {
@@ -128,8 +128,41 @@
       footer {
         text-align: center;
       }
+      
+      .melody-infos {
+        font-family: 'Coda Caption';
+      }
+      .melody-infos .family {
+        
+      }
+      .melody-infos .family:before {
+        content: '\266A';
+        margin: 2px;
+      }
+      
+      .melody-infos .id {
+        color: #aaa;
+      }
+      .melody-infos .id:before {
+        content: '\266F';
+        margin: 2px;
+      }
+      .melody-infos .generation {
+        color: #39E;
+      }
+      .melody-infos .generation:before {
+        content: '\26A4';
+        margin: 2px;
+      }
+      .melody-infos .mutation {
+        color: #F66;
+      }
+      .melody-infos .mutation:before {
+        content: '\2622';
+        margin: 2px;
+      }
     </style>
-    <title>♪ Social Melodic</title>
+    <title>♫ Social Melodic</title>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
     <script type="text/javascript" src="jsfx/audio.js"></script>
     <script type="text/javascript" src="jsfx/jsfx.js"></script>
@@ -142,7 +175,7 @@
   
   <body>
     <div id="container">
-      <h1>♪ Social Melodic <span class="phonetic">[səʊʃl̩ mɨˈlɑɾɪk]</span></h1>
+      <h1>♫ Social Melodic <span class="phonetic">[səʊʃl̩ mɨˈlɑɾɪk]</span></h1>
       <h2>a human-based melody generator</h2>
       
       
@@ -158,9 +191,18 @@
         <h2><img src="ajax-loader.gif" /> Loading...</h2> 
       </div>
       
-      <div id="main" class="player-vote" style="display: none;">
-        <canvas id="player"></canvas>
+      <div id="main" style="display: none;">
+        <div class="playerContainer">
+          <div class="melody-infos">
+            <span class="family" title="Family code name">Typhon</span>
+            <span class="id" title="melody number">1234</span>
+            <span class="generation">3</span>
+            <span class="mutation">2</span>
+          </div>
+          <canvas id="player"></canvas>
+        </div>
         <div class="choices hidden">
+          <h1>Vote it!</h1>
           <ul>
             <li class="like"><a href="#">I like</a></li>
             <li class="dislike"><a href="#">I don't like</a></li>
@@ -180,15 +222,20 @@ $(function(){
     return alert('There is an issue on Chrome+Mac with jsfx library. (Noisy sounds..) Please go on Safari or Firefox until we fix it.');
   
   
+  var randomJustIntonation = function() {
+    var justIntonations = [1,3,5,6,8,10];
+    return Math.floor(12*(Math.random()>0.5 ? 0 : 1)+justIntonations[Math.floor(Math.random()*justIntonations.length)])
+  }
+  
   // POC
   new Loader(function(){
     var notes = [];
     for(var i=0; i<32; ++i) {
-      var ens = []
+      var ens = [];
       if( !(i%2==1 && Math.random()>0.2 || i%4==0 && Math.random()>0.8) ) {
-        ens.push(Math.floor(Math.random()*16));
+        ens.push(randomJustIntonation());
         while(Math.random()>0.85) {
-          ens.push(Math.floor(Math.random()*16));
+          ens.push(randomJustIntonation());
         }
       }
       notes.push(ens);
@@ -201,6 +248,10 @@ $(function(){
     });
     
     new melody.Player({
+      width: 400,
+      height: 380,
+      bpm: 280,
+      nbPitch: 24,
       canvas: canvas,
       melody: {
         notes: notes,
