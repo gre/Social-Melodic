@@ -5,7 +5,7 @@ random ideas...
 - mutation pour certain fils sur les notes existantes
 - la plupart du temps 1 note chaque 4 temps, parfois 1 / 2 temps, rarement 1/1 temps, parfois 1 note après 8 temps
 - une note dans une mélodie : sa hauteur, sa position dans le cycle
-- possibilité d'ajouter une note : à la suite ou bien de façon dichotomique
+- ajouter une note à la suite, la longueur de la musique évolue au fur et à mesure jusqu'à un certain max
 - s'arrêter à un certain rang r de génération
 
 - plusieurs phases : construction de la mélodie. Ajout de son d'ambiance (basse), ajout de beats
@@ -23,13 +23,22 @@ random ideas...
 Melody:
   - parent : Melody
   - notes : List<Note>
+  - length : int
+  - nbNotes : int
   - likes : int = 0 // number of like
   - dislikes : int = 0 // number of dislike
   - generation : int = 0 // the number of parents
 
 Note:
-  - type
-  - freq
+  - type : {melody, ambient, beat}
+  - pitch : int
   - position
 
+// To avoid multiple votes on one melody
 
+Voter:
+  id : Long // to put in session
+
+Vote: // only use for log
+  voter: Voter
+  melody: Melody
