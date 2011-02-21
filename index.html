@@ -246,8 +246,9 @@ $(function(){
     return;
   }
   
-  if(navigator.userAgent.match('Chrome') && navigator.userAgent.match('Mac'))
-    return alert('There is an issue on Chrome+Mac with jsfx library. (Noisy sounds..) Please go on Safari or Firefox until we fix it.');
+  if(navigator.userAgent.match('Chrome') && navigator.userAgent.match('Mac')) {
+    $('#loading').prepend('<h3>There is an issue on Chrome+Mac with jsfx library. (Noisy sounds..)<br/> If you have the bug, Please go on Safari or Firefox until we fix it.</h3>');
+  }
   
   
   var randomJustIntonation = function() {
