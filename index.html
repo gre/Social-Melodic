@@ -43,9 +43,13 @@
       #main canvas {
         margin: 10px;
       }
-      #main .playerContainer, #main .choices {
+      #main .playerContainer {
         display: table-cell;
         vertical-align: top;
+      }
+      #main .choices {
+        display: table-cell;
+        vertical-align: middle;
       }
       
       .choices ul {
@@ -129,17 +133,24 @@
         text-align: center;
       }
       
+      .melody-infos a {
+        text-decoration: none;
+      }
+      .melody-infos a:hover {
+        text-decoration: underline;
+      }
+      
       .melody-infos {
         font-family: 'Coda Caption';
+        text-align: center;
       }
       .melody-infos .family {
-        
+        color: #000;
       }
       .melody-infos .family:before {
         content: '\266A';
         margin: 2px;
       }
-      
       .melody-infos .id {
         color: #aaa;
       }
@@ -194,15 +205,14 @@
       <div id="main" style="display: none;">
         <div class="playerContainer">
           <div class="melody-infos">
-            <span class="family" title="Family code name">Typhon</span>
-            <span class="id" title="melody number">1234</span>
-            <span class="generation">3</span>
-            <span class="mutation">2</span>
+            <a href="" class="family" title="Family name">Typhon</a>
+            <span class="id" title="Melody number">1234</span>
+            <span class="generation" title="Generation (number of parents)">3</span>
+            <span class="mutation" title="Total of mutation">2</span>
           </div>
           <canvas id="player"></canvas>
         </div>
         <div class="choices hidden">
-          <h1>Vote it!</h1>
           <ul>
             <li class="like"><a href="#">I like</a></li>
             <li class="dislike"><a href="#">I don't like</a></li>
