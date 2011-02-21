@@ -105,9 +105,9 @@
         -webkit-transform: translate(0px, 0px);
         -moz-transform: translate(0px, 0px);
         transform: translate(0px, 0px);
-        -webkit-transition: 2s opacity, 2s -webkit-transform;
-        -moz-transition: 2s opacity, 2s -moz-transform;
-        transition: 2s opacity, 2s transform;
+        -webkit-transition: 2s opacity;
+        -moz-transition: 2s opacity;
+        transition: 2s opacity;
       }
       
       .phonetic {
@@ -119,6 +119,7 @@
       
       .description {
         font-style: italic;
+        font-size: 0.9em;
         color: #333;
         padding: 10px;
         border: 0px dashed rgba(0,0,0,0.2);
@@ -193,7 +194,7 @@
       <header class="description">
       * People, through their choices, affect the evolution of melodies. 
       Melodies will undergo a series of mutation, 
-      and continue to grow and improve over generations. It's called human-based genetic algorithm.<br/>
+      and continue to grow and improve themselves over generations. It's called human-based genetic algorithm.
       The more of you, the more changes will be fast and significant.
       </header>
       
@@ -227,6 +228,24 @@
     
     <script type="text/javascript">
 $(function(){
+  
+  // From modernizr
+  var canvasSupport = function(){
+    var elem = document.createElement( 'canvas' );
+    return !!(elem.getContext && elem.getContext('2d'));
+  }
+  var waveSupport = function(){
+    var elem = document.createElement('audio'), bool = !!elem.canPlayType;
+    if(bool) return elem.canPlayType('audio/wav; codecs="1"');
+  }
+  var unsupported = [];
+  if(!canvasSupport()) unsupported.push('HTML5 Canvas');
+  if(!waveSupport()) unsupported.push('Audio wave format');
+  if(unsupported.length) {
+    $('#loading').replaceWith("<h2>Your browser doesn't support "+unsupported.join(' and ')+".</h2>");
+    return;
+  }
+  
   if(navigator.userAgent.match('Chrome') && navigator.userAgent.match('Mac'))
     return alert('There is an issue on Chrome+Mac with jsfx library. (Noisy sounds..) Please go on Safari or Firefox until we fix it.');
   
@@ -253,7 +272,7 @@ $(function(){
     var canvas =  document.getElementById('player');
     
     $(canvas).bind('loop', function(e, loop){
-      if(loop==10) $('.choices').removeClass('hidden');
+      $('.choices').removeClass('hidden');
     });
     
     new melody.Player({
