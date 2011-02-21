@@ -66,7 +66,9 @@ melody.Generator = function(primitives) {
     if(typeof(pitches)=="number") {
       pitches = [pitches];
     }
-    if(pitches.length==0) return null;
+    if(pitches.length==0) {
+      return callback(null);
+    }
     var all = [];
     for(var i=0; i<pitches.length; ++i) {
       var pitch = pitches[i];
