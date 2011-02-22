@@ -93,9 +93,10 @@ melody.Player = function(o) {
       // layout
       var playCenterRadius =  80;
       var ambiantSpace =  0; // Future
-      var bassSpace =  10; // Future
+      var bassSpace =  0; // Future
+      var borderSpace = 4;
       
-      var stepHauteur = Math.floor( (Math.min(width, height) - playCenterRadius - ambiantSpace - bassSpace) / (nbPitch+1));
+      var stepHauteur = Math.floor( (Math.min(width, height) - playCenterRadius - ambiantSpace - bassSpace - borderSpace) / (nbPitch+1));
       var bass =  playCenterRadius + ambiantSpace + stepHauteur*(nbPitch+1);
       
       var startTime;
@@ -146,18 +147,15 @@ melody.Player = function(o) {
         var hover = playControlHover();
         var centerX=$p.width/2, centerY=$p.height/2;
         $p.noStroke();
-        if(hover)
-          $p.fill(60);
-        else
-          $p.fill(100);
+        $p.fill(210, 40, 40);
         $p.ellipse(centerX, centerY, playCenterRadius, playCenterRadius);
         if(hover) {
-          $p.fill(240);
+          $p.fill(255);
           $p.strokeWeight(2);
           $p.stroke(0);
         }
         else {
-          $p.fill(180);
+          $p.fill(250, 120, 120);
         }
         
         if(!paused)
@@ -206,6 +204,10 @@ melody.Player = function(o) {
       var drawEnv = function() {
         
         var centerX =  $p.width/2,centerY =  $p.height/2;
+        // border
+        $p.noStroke();
+        $p.fill(210, 40, 40);
+        $p.ellipse(centerX, centerY, bass+bassSpace+borderSpace, bass+bassSpace+borderSpace);
         // Bass area
         $p.noStroke();
         $p.fill(100);

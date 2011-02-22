@@ -36,10 +36,6 @@
         margin: 10px 0;
         overflow: hidden;
       }
-      #main .choices {
-        width: 100%;
-        vertical-align: middle;
-      }
       #main canvas {
         margin: 10px;
       }
@@ -47,12 +43,13 @@
         display: table-cell;
         vertical-align: top;
       }
-      #main .choices {
+      #main .choicesContainer {
         display: table-cell;
         vertical-align: middle;
+        width: 100%;
       }
       
-      .choices ul {
+      ul.choices {
         padding: 0;
         list-style: none;
       }
@@ -117,16 +114,25 @@
         text-align: center;
       }
       
+      #main .choices {
+        margin: 50px 0;
+      }
+      
+      .share {
+        text-align: center;
+      }
+      
       .melody-infos a {
         text-decoration: none;
       }
       .melody-infos a:hover {
         text-decoration: underline;
       }
-      
       .melody-infos {
         font-family: 'Coda Caption';
         text-align: center;
+        font-size: 1.1em;
+        line-height: 1.5em;
       }
       .melody-infos .family {
         color: #000;
@@ -186,21 +192,33 @@
       </div>
       
       <div id="main" style="display: none;">
-        <div class="playerContainer">
+        <section class="choicesContainer">
           <div class="melody-infos">
             <a href="" class="family" title="Family name">Typhon</a>
             <span class="id" title="Melody number">1234</span>
             <span class="generation" title="Generation (number of parents)">3</span>
             <span class="mutation" title="Total of mutation">2</span>
           </div>
-          <canvas id="player"></canvas>
-        </div>
-        <div class="choices hidden">
-          <ul>
+          <ul class="choices hidden">
             <li class="like"><a href="#">I like</a></li>
             <li class="dislike"><a href="#">I don't like</a></li>
           </ul>
-        </div>
+          <div class="share">
+            <!-- AddThis Button BEGIN -->
+            <div class="addthis_toolbox addthis_default_style addthis_32x32_style">
+              <a class="addthis_button_facebook"></a>
+              <a class="addthis_button_twitter"></a>
+              <a class="addthis_button_digg"></a>
+              <a class="addthis_button_reddit"></a>
+              <a class="addthis_button_email"></a>
+            </div>
+            <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4d6411c970947c4d"></script>
+            <!-- AddThis Button END -->
+          </div>
+        </section>
+        <section class="playerContainer">
+          <canvas id="player"></canvas>
+        </section>
       </div>
       
       <footer>
@@ -252,7 +270,6 @@ $(function(){
     }
     
     var canvas =  document.getElementById('player');
-    
     
     var player = new melody.Player({
       width: 400,
