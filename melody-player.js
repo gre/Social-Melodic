@@ -149,14 +149,10 @@ melody.Player = function(o) {
         $p.noStroke();
         $p.fill(210, 40, 40);
         $p.ellipse(centerX, centerY, playCenterRadius, playCenterRadius);
-        if(hover) {
+        if(hover)
           $p.fill(255);
-          $p.strokeWeight(2);
-          $p.stroke(0);
-        }
-        else {
-          $p.fill(250, 120, 120);
-        }
+        else
+          $p.fill(255, 150, 150);
         
         if(!paused)
           $p.rect(centerX-15, centerY-15, 30, 30);

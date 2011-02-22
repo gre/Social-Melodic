@@ -13,6 +13,10 @@
         text-align: center;
       }
       
+      h1 a {
+        text-decoration: none;
+      }
+      
       header, footer {
         display: block;
       }
@@ -33,7 +37,6 @@
         display: table;
         width: 100%;
         background: rgb(240, 240, 240);
-        margin: 10px 0;
         overflow: hidden;
       }
       #main canvas {
@@ -115,7 +118,17 @@
       }
       
       #main .choices {
-        margin: 50px 0;
+        margin: 40px 0;
+      }
+      
+      .share .addthis_toolbox * {
+        float: none;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .share .addthis_toolbox strong {
+        font-size: 1.2em;
+        margin-right: 4px;
       }
       
       .share {
@@ -176,7 +189,7 @@
   
   <body>
     <div id="container">
-      <h1>♫ Social Melodic <span class="phonetic">[səʊʃl̩ mɨˈlɑɾɪk]</span></h1>
+      <h1><a href="/">♫ Social Melodic</a> <span class="phonetic">[səʊʃl̩ mɨˈlɑɾɪk]</span></h1>
       <h2>a human-based melody generator *</h2>
       
       
@@ -204,16 +217,14 @@
             <li class="dislike"><a href="#">I don't like</a></li>
           </ul>
           <div class="share">
-            <!-- AddThis Button BEGIN -->
             <div class="addthis_toolbox addthis_default_style addthis_32x32_style">
+              <strong>Share this </strong>
               <a class="addthis_button_facebook"></a>
               <a class="addthis_button_twitter"></a>
               <a class="addthis_button_digg"></a>
               <a class="addthis_button_reddit"></a>
-              <a class="addthis_button_email"></a>
             </div>
             <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4d6411c970947c4d"></script>
-            <!-- AddThis Button END -->
           </div>
         </section>
         <section class="playerContainer">
