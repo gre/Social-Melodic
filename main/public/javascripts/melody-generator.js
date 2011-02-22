@@ -4,7 +4,7 @@ if(typeof(melody)=='undefined') melody = {};
 (function(){
   melody.webWorkerReady = false;
   if(!!window.Worker) {
-    var worker = new Worker("worker.js");
+    var worker = new Worker(melody.GeneratorWorker);
     if(worker) {
       // small test
       worker.onmessage = function(a){
@@ -47,7 +47,7 @@ melody.Generator = function(primitives) {
   
   var mixPrimitives = function(all, callback) {
     if(melody.webWorkerReady) {
-      var worker = new Worker("worker.js");
+      var worker = new Worker(melody.GeneratorWorker);
       worker.onmessage = function(e) {
         callback(audio.data64ToAudio(e.data));
       }
