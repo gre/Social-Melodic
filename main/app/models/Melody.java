@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -14,12 +15,14 @@ import play.db.jpa.Model;
 public class Melody extends Model {
 	@ManyToOne
 	public Melody parent = null;
-	@OneToMany(mappedBy="parent")
+	
+	@OneToMany(mappedBy="parent", cascade=CascadeType.ALL)
 	public List<Melody> childrens = new ArrayList<Melody>();
+	
 	@ManyToOne
 	public Family family;
 	
-	@OneToMany
+	@OneToMany(cascade=CascadeType.ALL)
 	public List<Note> notes = new ArrayList<Note>();
 	
 	public Integer loopLength;
@@ -62,7 +65,6 @@ public class Melody extends Model {
 		int totalMutation = (int) Math.round(percentOfMutation * total);
 		while(total-->0) {
 			Note note = null;
-			Melody melody = new Melody(loopLength, notesLength);
 			Integer position = indexOfQueueRandomNote();
 			if(position>=0) {
 				if(Math.random()>0.5 && totalJustIntonation-->0)
@@ -72,6 +74,7 @@ public class Melody extends Model {
 			}
 			
 			if(note!=null) {
+				Melody melody = new Melody(loopLength, notesLength);
 				melody.setParent(this);
 				for(Note thisNote : notes) {
 					Note n = new Note(thisNote);
@@ -95,6 +98,7 @@ public class Melody extends Model {
 			Note n = notes.get((int) Math.floor(Math.random()*notes.size()));
 			n.pitch = (int) Math.floor(Math.random()*notesLength);
 			n.save();
+			mutation++;
 		} while(Math.random() > percentOfMutation);
 		return this;
 	}
@@ -141,6 +145,23 @@ public class Melody extends Model {
 			if(n.pos == i)
 				l.add(n);
 		return l;
+	}
+	
+	static final Integer melodyMinVoteToFilter = 10;
+	public boolean childrensReadyToFilter() {
+		return count("parent=?1 and total < ?2", this, melodyMinVoteToFilter) > 0;
+	}
+	
+	public void filterChildrens() {
+		Melody keep = find("parent=?1 order by likes desc", this, melodyMinVoteToFilter).first();
+		for(Melody m : childrens) {
+			if(!m.equals(keep))
+				m.delete();
+		}
+		childrens = new ArrayList<Melody>();
+		childrens.add(keep);
+		save();
+		keep.createChildrens();
 	}
 	
 	public Melody vote(boolean like) {
