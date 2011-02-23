@@ -53,26 +53,12 @@ melody.Player = function(o) {
     pitches[i] = ens;
   }
   
-  
   var notes = [];
-  
-  var count = 0;
-  for(var i=0; i<nbLoop; ++i) {
-    (function(index){
-      generator.createNote(pitches[index], function(res) {
-        notes[index] = res;
-        if(++count == nbLoop) {
-          onLoad();
-        }
-      });
-    }(i));
-  }
   
   var triggerLoop = function(loop) {
     $(canvas).trigger('loop', [loop]);
     if(notes[loop]) notes[loop].play();
   }
-  
   
   var callbacks = [];
   var loaded = false;
@@ -81,6 +67,7 @@ melody.Player = function(o) {
     else callbacks.push(callback);
     return this;
   }
+  
   var onLoad = function(){
     
     player.processing = new Processing(canvas, function($p) {
@@ -244,5 +231,17 @@ melody.Player = function(o) {
       callbacks[c]();
     }
     callbacks = [];
+  }
+  
+  var count = 0;
+  for(var i=0; i<nbLoop; ++i) {
+    (function(index){
+      generator.createNote(pitches[index], function(res) {
+        notes[index] = res;
+        if(++count == nbLoop) {
+          onLoad();
+        }
+      });
+    }(i));
   }
 }
