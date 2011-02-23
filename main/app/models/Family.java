@@ -21,4 +21,15 @@ public class Family extends Model {
 		root = m;
 		return this;
 	}
+	
+	public static Family bootstrapRandom(String familyName) {
+		Family family = new Family(familyName);
+		Melody m = new Melody(16, 20);
+		m.family = family;
+		for(int i=0; i<3; ++i)
+			m.queueRandomNote();
+		m.save();
+		family.setRoot(m);
+		return family;
+	}
 }
