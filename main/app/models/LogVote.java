@@ -7,6 +7,9 @@ import javax.persistence.ManyToOne;
 
 import play.db.jpa.Model;
 
+/**
+ * Log a vote to not revote for an already voted melody
+ */
 @Entity
 public class LogVote extends Model {
 	@ManyToOne

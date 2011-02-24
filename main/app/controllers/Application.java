@@ -28,15 +28,16 @@ public class Application extends Controller {
     }
     
     public static void random() {
+			if(Family.count()==0) Family.bootstrapRandom("Alpha");
     	Melody melody = Melody.chooseRandom(getVoter());
     	if(melody==null) noMoreMelodies();
     	melody(melody.id);
     }
     
     public static void noMoreMelodies() {
-    	// TODO
-		render();
-	}
+    	// TODO : inform user he reach all melodies vote, wait for next generation -> link to family tree
+			render();
+		}
 
 	public static void melody(@Required Long id) {
     	Melody melody = Melody.findById(id);
@@ -48,7 +49,9 @@ public class Application extends Controller {
 		if(Validation.hasErrors()) notFound();
 		Melody m = Melody.findById(id);
 		notFoundIfNull(m);
-		getVoter().vote(m, act.equals("like"));
+		LogVoter voter = getVoter();
+		if(LogVote.count("byMelodyByLogVoter", m, voter)==0 && m.total < m.family.melodyMinVoteToFilter)
+			voter.vote(m, act.equals("like"));
 		random();
 	}
 }

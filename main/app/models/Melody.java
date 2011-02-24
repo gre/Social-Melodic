@@ -11,6 +11,9 @@ import javax.persistence.OneToMany;
 
 import play.db.jpa.Model;
 
+/**
+ * A melody entity. It's forked from his parent melody and will create children melodies.
+ */
 @Entity
 public class Melody extends Model {
 	@ManyToOne
@@ -39,6 +42,16 @@ public class Melody extends Model {
 
 	@OneToMany(mappedBy="melody")
 	List<LogVote> votes = new ArrayList<LogVote>();
+
+	///	CONSTANTS : must be editable from backoffice
+	
+	public static Double luckOfMutation = 0.05;
+	public static Double percentOfAllPossibilities = 0.8;
+	public static Double luckOfJustIntonation = 0.7;
+	
+	public static Double luckToEscape1of2 = 0.9;
+	public static Double luckToEscape1of4 = 0.1;
+	public static Double luckToAvoidSamePosition = 0.1;
 	
 	public Melody(Integer loopLength, Integer notesLength) {
 		this.loopLength = loopLength;
@@ -47,27 +60,29 @@ public class Melody extends Model {
 	
 	public Melody setParent(Melody parent) {
 		this.parent = parent;
-		for(generation=0; parent!=null; generation++, parent=parent.parent);
-		family = parent.family;
-		mutation = parent.mutation;
+		if(parent!=null) {
+			generation = parent.generation + 1;
+			family = parent.family;
+			mutation = parent.mutation;
+		}
 		return this;
 	}
-
-	static final Double percentOfMutation = 0.05;
-	static final Double percentOfAllPossibilities = 0.8;
-	static final Double luckOfJustIntonation = 0.7;
+	
+	public Melody setFamily(Family family) {
+		this.family = family;
+		return this;
+	}
 	
 	public Melody createChildrens() {
 		int total = (int) Math.round(notesLength * percentOfAllPossibilities);
 		if(total<=0) return this;
 		int totalJustIntonation = (int) Math.round(total * luckOfJustIntonation);
 		int totalNotJustIntonation = total - totalJustIntonation;
-		int totalMutation = (int) Math.round(percentOfMutation * total);
 		while(total-->0) {
 			Note note = null;
 			Integer position = indexOfQueueRandomNote();
 			if(position>=0) {
-				if(Math.random()>0.5 && totalJustIntonation-->0)
+				if(Math.random()<0.5 && totalJustIntonation-->0)
 					note = new Note(Note.randomJustIntonation(notesLength), position);
 				else if(totalNotJustIntonation-->0)
 					note = new Note(Note.randomNotJustIntonation(notesLength), position);
@@ -83,34 +98,33 @@ public class Melody extends Model {
 				}
 				note.save();
 				melody.notes.add(note);
-				if(totalMutation-->0)
-					melody.applyMutation();
+				melody.applyMutation();
 				melody.save();
 				childrens.add(melody);
 			}
 		}
 		save();
+		if(generation+1 > family.depth) {
+			family.depth = generation + 1;
+			family.save();
+		}
 		return this;
 	}
 
 	private Melody applyMutation() {
-		do {
+		while(Math.random() < luckOfMutation) {
 			Note n = notes.get((int) Math.floor(Math.random()*notes.size()));
 			n.pitch = (int) Math.floor(Math.random()*notesLength);
 			n.save();
 			mutation++;
-		} while(Math.random() > percentOfMutation);
+		}
 		return this;
 	}
-
-	static final Double luckToEscape1of2 = 0.9;
-	static final Double luckToEscape1of4 = 0.1;
-	static final Double luckToAvoidSamePosition = 0.9;
 	
 	public int indexOfQueueRandomNote() {
-		boolean escape1of2 = Math.random() > luckToEscape1of2;
-		boolean escape1of4 = Math.random() > luckToEscape1of4;
-		boolean avoidSamePosition = Math.random() > luckToAvoidSamePosition;
+		boolean escape1of2 = Math.random() < luckToEscape1of2;
+		boolean escape1of4 = Math.random() < luckToEscape1of4;
+		boolean avoidSamePosition = Math.random() < luckToAvoidSamePosition;
 		boolean found = false;
 		for(int pos = 0; pos<loopLength && !found; pos += escape1of2 ? (escape1of4 ? 4 : 2) : 1 )
 			if(avoidSamePosition || getNotesForPosition(pos).size()==0)
@@ -147,13 +161,12 @@ public class Melody extends Model {
 		return l;
 	}
 	
-	static final Integer melodyMinVoteToFilter = 10;
 	public boolean childrensReadyToFilter() {
-		return count("parent=?1 and total < ?2", this, melodyMinVoteToFilter) > 0;
+		return count("parent=?1 and total < ?2", this, family.melodyMinVoteToFilter) == 0;
 	}
 	
 	public void filterChildrens() {
-		Melody keep = find("parent=?1 order by likes desc", this, melodyMinVoteToFilter).first();
+		Melody keep = find("parent=?1 order by likes desc", this, family.melodyMinVoteToFilter).first();
 		for(Melody m : childrens) {
 			if(!m.equals(keep))
 				m.delete();
@@ -164,14 +177,18 @@ public class Melody extends Model {
 		keep.createChildrens();
 	}
 	
-	public Melody vote(boolean like) {
+	public void vote(boolean like) {
 		if(like) ++ likes;
 		++ total;
-		return this;
+		save();
+		if(parent.childrensReadyToFilter()) {
+			// next gen
+			parent.filterChildrens();
+		}
 	}
 	
 	public static Melody chooseRandom(LogVoter voter) {
-		List<Melody> melodies = find("from Melody m where ?1 not in (select voter from LogVote where melody=m) order by total asc", voter).fetch(50);
+		List<Melody> melodies = find("from Melody m where parent is not null and total < family.melodyMinVoteToFilter and ?1 not in (select voter from LogVote where melody=m) order by total asc", voter).fetch(50);
 		if(melodies==null || melodies.size()<=0) {
 			return null;
 		}

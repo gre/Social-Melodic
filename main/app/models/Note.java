@@ -5,10 +5,13 @@ import javax.persistence.ManyToOne;
 
 import play.db.jpa.Model;
 
+/**
+ * One note in a melody
+ */
 @Entity
 public class Note extends Model {
-	public Integer pitch;
-	public Integer pos; // loop position
+	public Integer pitch; // value of the note (1 to notesLength)
+	public Integer pos; // loop position (1 to loopLength)
 
 	public Note(Integer pitch, Integer position) {
 		this.pitch = pitch;
