@@ -19,6 +19,17 @@ public class Family extends Model {
 	
 	public Integer depth = 0;
 	
+	// Properties
+
+	public Double luckOfMutation = 0.05;
+	public Double percentOfAllPossibilities = 0.8;
+	public Double luckOfJustIntonation = 0.7;
+	
+	public Double luckToEscape1of2 = 0.9;
+	public Double luckToEscape1of4 = 0.1;
+	public Double luckToAvoidSamePosition = 0.1;
+	
+	
 	public Family(String name) {
 		this.name = name;
 	}

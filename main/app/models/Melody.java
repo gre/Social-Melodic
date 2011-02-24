@@ -45,14 +45,6 @@ public class Melody extends Model {
 
 	///	CONSTANTS : must be editable from backoffice
 	
-	public static Double luckOfMutation = 0.05;
-	public static Double percentOfAllPossibilities = 0.8;
-	public static Double luckOfJustIntonation = 0.7;
-	
-	public static Double luckToEscape1of2 = 0.9;
-	public static Double luckToEscape1of4 = 0.1;
-	public static Double luckToAvoidSamePosition = 0.1;
-	
 	public Melody(Integer loopLength, Integer notesLength) {
 		this.loopLength = loopLength;
 		this.notesLength = notesLength;
@@ -74,9 +66,9 @@ public class Melody extends Model {
 	}
 	
 	public Melody createChildrens() {
-		int total = (int) Math.round(notesLength * percentOfAllPossibilities);
+		int total = (int) Math.round(notesLength * family.percentOfAllPossibilities);
 		if(total<=0) return this;
-		int totalJustIntonation = (int) Math.round(total * luckOfJustIntonation);
+		int totalJustIntonation = (int) Math.round(total * family.luckOfJustIntonation);
 		int totalNotJustIntonation = total - totalJustIntonation;
 		while(total-->0) {
 			Note note = null;
@@ -112,7 +104,7 @@ public class Melody extends Model {
 	}
 
 	private Melody applyMutation() {
-		while(Math.random() < luckOfMutation) {
+		while(Math.random() < family.luckOfMutation) {
 			Note n = notes.get((int) Math.floor(Math.random()*notes.size()));
 			n.pitch = (int) Math.floor(Math.random()*notesLength);
 			n.save();
@@ -122,9 +114,9 @@ public class Melody extends Model {
 	}
 	
 	public int indexOfQueueRandomNote() {
-		boolean escape1of2 = Math.random() < luckToEscape1of2;
-		boolean escape1of4 = Math.random() < luckToEscape1of4;
-		boolean avoidSamePosition = Math.random() < luckToAvoidSamePosition;
+		boolean escape1of2 = Math.random() < family.luckToEscape1of2;
+		boolean escape1of4 = Math.random() < family.luckToEscape1of4;
+		boolean avoidSamePosition = Math.random() < family.luckToAvoidSamePosition;
 		boolean found = false;
 		for(int pos = 0; pos<loopLength && !found; pos += escape1of2 ? (escape1of4 ? 4 : 2) : 1 )
 			if(avoidSamePosition || getNotesForPosition(pos).size()==0)
