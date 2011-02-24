@@ -24,7 +24,7 @@ public class Application extends Controller {
 	}
 	
     public static void index() {
-        render();
+        random();
     }
     
     public static void random() {

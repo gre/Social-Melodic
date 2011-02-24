@@ -43,10 +43,11 @@ public class Family extends Model {
 	public static Family bootstrapRandom(String familyName) {
 		Family family = new Family(familyName).save();
 		Melody m = new Melody(16, 20).save();
+		family.setRoot(m);
 		for(int i=0; i<3; ++i)
 			m.queueRandomNote();
 		m.save();
-		family.setRoot(m).save();
+		m.createChildrens();
 		return family;
 	}
 	
