@@ -28,9 +28,11 @@ public class Application extends Controller {
     }
     
     public static void random() {
-			if(Family.count()==0) Family.bootstrapRandom("Alpha");
+		if(Family.count()==0) 
+		    Family.bootstrapRandom("Alpha");
     	Melody melody = Melody.chooseRandom(getVoter());
-    	if(melody==null) noMoreMelodies();
+    	if(melody==null) 
+    	    noMoreMelodies();
     	melody(melody.id);
     }
     
@@ -50,7 +52,7 @@ public class Application extends Controller {
 		Melody m = Melody.findById(id);
 		notFoundIfNull(m);
 		LogVoter voter = getVoter();
-		if(LogVote.count("byMelodyByLogVoter", m, voter)==0 && m.total < m.family.melodyMinVoteToFilter)
+		if(LogVote.count("byMelodyAndVoter", m, voter)==0 && m.total < m.family.melodyMinVoteToFilter)
 			voter.vote(m, act.equals("like"));
 		random();
 	}

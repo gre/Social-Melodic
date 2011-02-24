@@ -3,6 +3,7 @@ package models;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Vector;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -10,6 +11,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import play.db.jpa.Model;
+import sun.java2d.pipe.LoopPipe;
 
 /**
  * A melody entity. It's forked from his parent melody and will create children melodies.
@@ -128,7 +130,7 @@ public class Melody extends Model {
 	 * @return note if place has been found, else null
 	 */
 	public Note queueRandomNote() {
-		Integer pitch = (int) Math.floor(Math.random()*notesLength);
+		Integer pitch = Note.randomIntonation(notesLength);
 		boolean alreadyIn = false;
 		int pos = indexOfQueueRandomNote();
 		if(pos==-1) return null;
@@ -153,8 +155,28 @@ public class Melody extends Model {
 		return l;
 	}
 	
+	public Vector<List<Integer>> getNotesArray() {
+	    Vector< List<Integer> > array = new Vector<List<Integer>>(loopLength);
+	    for(int i=0; i<loopLength; ++i)
+	        array.add(new ArrayList<Integer>());
+	    for(Note n : notes) {
+	        List<Integer> notes = array.get(n.pos);
+	        notes.add(n.pitch);
+	    }
+	    return array;
+	}
+	
 	public boolean childrensReadyToFilter() {
 		return count("parent=?1 and total < ?2", this, family.melodyMinVoteToFilter) == 0;
+	}
+	
+	public boolean hasChildrens() {
+	    return childrens.size()>0;
+	}
+	
+	public void checkFilter() {
+        if(childrensReadyToFilter() && !hasChildrens())
+            filterChildrens();
 	}
 	
 	public void filterChildrens() {
@@ -173,10 +195,7 @@ public class Melody extends Model {
 		if(like) ++ likes;
 		++ total;
 		save();
-		if(parent.childrensReadyToFilter()) {
-			// next gen
-			parent.filterChildrens();
-		}
+		parent.checkFilter();
 	}
 	
 	public static Melody chooseRandom(LogVoter voter) {
@@ -186,5 +205,4 @@ public class Melody extends Model {
 		}
 		return melodies.get( (int)Math.floor(Math.random()*melodies.size()) );
 	}
-	
 }

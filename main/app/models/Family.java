@@ -30,6 +30,8 @@ public class Family extends Model {
 	public Double luckToAvoidSamePosition = 0.1;
 	
 	
+	public static final Integer melodiesAtBootstrap = 2;
+	
 	public Family(String name) {
 		this.name = name;
 	}
@@ -44,8 +46,11 @@ public class Family extends Model {
 		Family family = new Family(familyName).save();
 		Melody m = new Melody(16, 20).save();
 		family.setRoot(m);
-		for(int i=0; i<3; ++i)
-			m.queueRandomNote();
+		for(int i=0; i<melodiesAtBootstrap; ++i) {
+		    Integer pitch = Note.randomIntonation(m.notesLength);
+		    Note n = new Note(pitch, i*2).save();
+		    m.notes.add(n);
+		}
 		m.save();
 		m.createChildrens();
 		return family;

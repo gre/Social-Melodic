@@ -244,4 +244,7 @@ melody.Player = function(o) {
       });
     }(i));
   }
+  if(!nbLoop) {
+    onLoad();
+  }
 }

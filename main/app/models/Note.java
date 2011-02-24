@@ -36,4 +36,7 @@ public class Note extends Model {
 		Integer octave = (int)Math.floor(max/intonationMax);
 		return 12*octave + pitch;
 	}
+	public static Integer randomIntonation(int max) {
+	    return (int) Math.floor(Math.random()*max);
+	}
 }

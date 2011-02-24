@@ -1,7 +1,7 @@
 if(typeof(melody)=='undefined') melody = {};
 
 // Test workers
-(function(){
+$(document).ready(function(){
   melody.webWorkerReady = false;
   if(!!window.Worker) {
     var worker = new Worker(melody.GeneratorWorker);
@@ -21,7 +21,7 @@ if(typeof(melody)=='undefined') melody = {};
       worker.postMessage(["sine",0,0,0,0,0,0,20,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
     }
   }
-}());
+});
 
 // Melody generator
 melody.Generator = function(primitives) {

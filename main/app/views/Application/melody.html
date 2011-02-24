@@ -12,7 +12,7 @@ The more of you, the more changes will be fast and significant.
 </header>
 
 <div id="loading">
-  <h2><img src="ajax-loader.gif" /> Loading...</h2> 
+  <h2><img src="/public/images/ajax-loader.gif" /> Loading...</h2> 
 </div>
 
 <div id="main" style="display: none;">
@@ -24,9 +24,10 @@ The more of you, the more changes will be fast and significant.
       <span class="mutation" title="Total of mutation">2</span>
     </div>
     <ul class="choices hidden">
-      <li class="like"><a href="#">I like</a></li>
-      <li class="dislike"><a href="#">I don't like</a></li>
+      <li class="like"><a href="@{Application.vote(melody.id, 'like')}">I like</a></li>
+      <li class="dislike"><a href="@{Application.vote(melody.id, 'dislike')}">I don't like</a></li>
     </ul>
+    <!--
     <div class="share">
       <div class="addthis_toolbox addthis_default_style addthis_32x32_style">
         <strong>Share this </strong>
@@ -37,6 +38,7 @@ The more of you, the more changes will be fast and significant.
       </div>
       <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4d6411c970947c4d"></script>
     </div>
+    -->
   </section>
   <section class="playerContainer">
     <canvas id="player"></canvas>
@@ -71,13 +73,13 @@ $(function(){
     $('#loading').prepend('<h3>There is an issue on Chrome+Mac with jsfx library. (Noisy sounds..)<br/> If you have the bug, Please go on Safari or Firefox until we fix it.</h3>');
   }
   
+  var loadingTimeout = setInterval(function(){
+    $('#loading').html('<h3>Un problème est survenu au chargement de la mélodie. Rafraichissez ou essayer avec un autre navigateur (FF4, Chrome, Safari, ...).</h3>');
+  }, 10000);
+  
   // POC
   new Loader(function(){
-%{
-// TODO
-}%
-    /*  */
-    var notes = [];
+    var notes = ${melody.getNotesArray()};
     
     var canvas =  document.getElementById('player');
     
@@ -94,7 +96,8 @@ $(function(){
           ["saw",1.0000,0.200,0.0230,0.0600,0.2280,0.3880,20.0000,null,2000.0000,-0.0800,-0.0880,0.0000,18.0542,0.1199,-0.2620,-0.0640,0.0000,0.0855,0.0000,0.0000,0.0500,0.0420,0.7490,0.1400,0.5020,0.3160,-0.4000],
           ["sine",0.0000,0.1,0.0000,0.2580,0.7770,0.5020,20.0000,null,1984.0000,0.0000,0.0000,0.0000,7.9763,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,1.0000,0.0000,0.0000,0.0000,0.0000]])
       }
-    }).load(function(){
+    });
+    player.load(function(){
       $('#loading').hide();
       $('#main').show(); 
       $('.choices').show();

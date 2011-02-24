@@ -5,6 +5,9 @@
 # Home page
 GET     /                                       Application.index
 
+GET     /melody/{id}                            Application.melody
+GET     /melody/{id}/{act}                      Application.vote
+
 # Map static resources from the /app/public folder to the /public path
 GET     /public/                                staticDir:public
 
