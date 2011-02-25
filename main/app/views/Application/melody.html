@@ -18,14 +18,14 @@ The more of you, the more changes will be fast and significant.
 <div id="main" style="display: none;">
   <section class="choicesContainer">
     <div class="melody-infos">
-      <a href="" class="family" title="Family name">Typhon</a>
-      <span class="id" title="Melody number">1234</span>
-      <span class="generation" title="Generation (number of parents)">3</span>
-      <span class="mutation" title="Total of mutation">2</span>
+      <a href="@{family(melody.family.id)}" class="family" title="Family name">${melody.family.name}</a>
+      <span class="id" title="Melody number">${melody.id}</span>
+      <span class="generation" title="Generation (number of parents)">${melody.generation}</span>
+      <span class="mutation" title="Total of mutation">${melody.mutation}</span>
     </div>
     <ul class="choices hidden">
-      <li class="like"><a href="@{Application.vote(melody.id, 'like')}">I like</a></li>
-      <li class="dislike"><a href="@{Application.vote(melody.id, 'dislike')}">I don't like</a></li>
+      <li class="like"><a href="@{vote(melody.id, 'like')}">I like</a></li>
+      <li class="dislike"><a href="@{vote(melody.id, 'dislike')}">I don't like</a></li>
     </ul>
     <!--
     <div class="share">

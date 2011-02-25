@@ -22,38 +22,37 @@ public class Family extends Model {
 	// Properties
 
 	public Double luckOfMutation = 0.05;
-	public Double percentOfAllPossibilities = 0.8;
+	public Double percentOfAllPossibilities = 0.4;
 	public Double luckOfJustIntonation = 0.7;
 	
 	public Double luckToEscape1of2 = 0.9;
 	public Double luckToEscape1of4 = 0.1;
 	public Double luckToAvoidSamePosition = 0.1;
 	
-	
-	public static final Integer melodiesAtBootstrap = 2;
+	public Integer nbMelodiesAtBootstrap = 0; // inited on family creation
 	
 	public Family(String name) {
 		this.name = name;
 	}
 	
-	public Family setRoot(Melody m) {
-		m.setFamily(this).save();
-		root = m;
-		return this;
-	}
-	
-	public static Family bootstrapRandom(String familyName) {
-		Family family = new Family(familyName).save();
+	public Family(String name, Integer nbMelodiesToBootstrap) {
+		this(name);
+		this.nbMelodiesAtBootstrap = nbMelodiesToBootstrap;
 		Melody m = new Melody(16, 20).save();
-		family.setRoot(m);
-		for(int i=0; i<melodiesAtBootstrap; ++i) {
+		setRoot(m);
+		for(int i=0; i<nbMelodiesToBootstrap; ++i) {
 		    Integer pitch = Note.randomIntonation(m.notesLength);
 		    Note n = new Note(pitch, i*2).save();
 		    m.notes.add(n);
 		}
 		m.save();
 		m.createChildrens();
-		return family;
+	}
+	
+	public Family setRoot(Melody m) {
+		m.setFamily(this).save();
+		root = m;
+		return this;
 	}
 	
 	/**

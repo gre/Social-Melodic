@@ -11,7 +11,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import play.db.jpa.Model;
-import sun.java2d.pipe.LoopPipe;
 
 /**
  * A melody entity. It's forked from his parent melody and will create children melodies.
@@ -52,6 +51,20 @@ public class Melody extends Model {
 		this.notesLength = notesLength;
 	}
 	
+	public Melody(Melody parent) {
+		this(parent.loopLength, parent.notesLength);
+		setParent(parent);
+		for(Note note : parent.notes) {
+			Note n = new Note(note).save();
+			notes.add(n);
+		}
+	}
+	
+	public Melody(Melody parent, Note newNote) {
+		this(parent);
+		notes.add(newNote);
+	}
+	
 	public Melody setParent(Melody parent) {
 		this.parent = parent;
 		if(parent!=null) {
@@ -70,30 +83,11 @@ public class Melody extends Model {
 	public Melody createChildrens() {
 		int total = (int) Math.round(notesLength * family.percentOfAllPossibilities);
 		if(total<=0) return this;
-		int totalJustIntonation = (int) Math.round(total * family.luckOfJustIntonation);
-		int totalNotJustIntonation = total - totalJustIntonation;
 		while(total-->0) {
-			Note note = null;
 			Integer position = indexOfQueueRandomNote();
 			if(position>=0) {
-				if(Math.random()<0.5 && totalJustIntonation-->0)
-					note = new Note(Note.randomJustIntonation(notesLength), position);
-				else if(totalNotJustIntonation-->0)
-					note = new Note(Note.randomNotJustIntonation(notesLength), position);
-			}
-			
-			if(note!=null) {
-				Melody melody = new Melody(loopLength, notesLength);
-				melody.setParent(this);
-				for(Note thisNote : notes) {
-					Note n = new Note(thisNote);
-					n.save();
-					melody.notes.add(n);
-				}
-				note.save();
-				melody.notes.add(note);
-				melody.applyMutation();
-				melody.save();
+				Note note = new Note(Math.random()<family.luckOfJustIntonation ? Note.randomJustIntonation(notesLength) : Note.randomNotJustIntonation(notesLength), position).save();
+				Melody melody = new Melody(this, note).applyMutation().save();
 				childrens.add(melody);
 			}
 		}
@@ -119,32 +113,10 @@ public class Melody extends Model {
 		boolean escape1of2 = Math.random() < family.luckToEscape1of2;
 		boolean escape1of4 = Math.random() < family.luckToEscape1of4;
 		boolean avoidSamePosition = Math.random() < family.luckToAvoidSamePosition;
-		boolean found = false;
-		for(int pos = 0; pos<loopLength && !found; pos += escape1of2 ? (escape1of4 ? 4 : 2) : 1 )
+		for(int pos = 0; pos<loopLength; pos += escape1of2 ? (escape1of4 ? 4 : 2) : 1 )
 			if(avoidSamePosition || getNotesForPosition(pos).size()==0)
 				return pos;
 		return -1;
-	}
-	
-	/**
-	 * @return note if place has been found, else null
-	 */
-	public Note queueRandomNote() {
-		Integer pitch = Note.randomIntonation(notesLength);
-		boolean alreadyIn = false;
-		int pos = indexOfQueueRandomNote();
-		if(pos==-1) return null;
-		for(Note n : notes) {
-			if(n.pitch==pitch && n.pos==pos)
-				alreadyIn = true;
-		}
-		if(!alreadyIn) {
-			Note n = new Note(pitch, pos);
-			n.save();
-			notes.add(n);
-			return n;
-		}
-		return null;
 	}
 	
 	public List<Note> getNotesForPosition(Integer i) {
@@ -175,7 +147,7 @@ public class Melody extends Model {
 	}
 	
 	public void checkFilter() {
-        if(childrensReadyToFilter() && !hasChildrens())
+        if(!hasChildrens() && childrensReadyToFilter())
             filterChildrens();
 	}
 	

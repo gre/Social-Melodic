@@ -28,8 +28,10 @@ public class Application extends Controller {
     }
     
     public static void random() {
-		if(Family.count()==0) 
-		    Family.bootstrapRandom("Alpha");
+		if(Family.count()==0) {
+		    new Family("Alpha", 2).save();
+		    new Family("Typhon", 5).save();
+		}
     	Melody melody = Melody.chooseRandom(getVoter());
     	if(melody==null) 
     	    noMoreMelodies();
@@ -47,6 +49,12 @@ public class Application extends Controller {
     	render(melody);
     }
 
+	public static void family(@Required Long id) {
+		Family family = Melody.findById(id);
+		notFoundIfNull(family);
+		render(family);
+	}
+	
 	public static void vote(@Required Long id, @Required String act) {
 		if(Validation.hasErrors()) notFound();
 		Melody m = Melody.findById(id);

@@ -23,6 +23,10 @@ public class Note extends Model {
 		this.pos = n.pos;
 	}
 	
+	public boolean sameAs(Note n) {
+		return pitch==n.pitch && pos==n.pos;
+	}
+	
 	static final Integer intonationMax = 12;
 	static final Integer[] justIntonations = {1,3,5,6,8,10};
 	static final Integer[] notJustIntonations = {0,2,4,7,9,11};
