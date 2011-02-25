@@ -161,6 +161,9 @@ public class Melody extends Model {
 		childrens.add(keep);
 		save();
 		keep.createChildrens();
+		if(!keep.hasChildrens()) {
+			family.setFinished();
+		}
 	}
 	
 	public void vote(boolean like) {

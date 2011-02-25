@@ -1,5 +1,7 @@
 package controllers;
 
+import java.util.List;
+
 import play.data.validation.Required;
 import play.data.validation.Validation;
 import play.mvc.*;
@@ -29,8 +31,8 @@ public class Application extends Controller {
     
     public static void random() {
 		if(Family.count()==0) {
-		    new Family("Alpha", 2).save();
-		    new Family("Typhon", 5).save();
+		    new Family("Alpha").bootstrap(2, 16, 16).save();
+		    new Family("Typhon").bootstrap(5, 24, 20).save();
 		}
     	Melody melody = Melody.chooseRandom(getVoter());
     	if(melody==null) 
@@ -40,14 +42,23 @@ public class Application extends Controller {
     
     public static void noMoreMelodies() {
     	// TODO : inform user he reach all melodies vote, wait for next generation -> link to family tree
-			render();
-		}
+		render();
+	}
 
+    public static void melodyNotFound() {
+    	render();
+    }
+    
 	public static void melody(@Required Long id) {
     	Melody melody = Melody.findById(id);
-    	notFoundIfNull(melody);
+    	if(melody==null) melodyNotFound();
     	render(melody);
     }
+	
+	public static void families() {
+		List<Family> families = Family.list();
+		render(families);
+	}
 
 	public static void family(@Required Long id) {
 		Family family = Melody.findById(id);
