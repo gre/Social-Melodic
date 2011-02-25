@@ -32,7 +32,7 @@ public class Application extends Controller {
     public static void random() {
 		if(Family.count()==0) {
 		    new Family("Alpha").bootstrap(2, 16, 16).save();
-		    new Family("Typhon").bootstrap(5, 24, 20).save();
+		    //new Family("Typhon").bootstrap(5, 24, 20).save();
 		}
     	Melody melody = Melody.chooseRandom(getVoter());
     	if(melody==null) 
@@ -75,4 +75,15 @@ public class Application extends Controller {
 			voter.vote(m, act.equals("like"));
 		random();
 	}
+
+    public static void adminLogin() {
+        render();
+    }
+    public static void adminAuth(String login, String password) {
+        if("admin".equals(login) && "aqwzsx".equals(password)) {
+            session.put("admin", "true");
+            Admin.index();
+        }
+        adminLogin();
+    }
 }

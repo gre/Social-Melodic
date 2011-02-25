@@ -6,6 +6,8 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
+import controllers.CRUD.Hidden;
+
 import play.db.jpa.Model;
 
 /**
@@ -15,14 +17,13 @@ import play.db.jpa.Model;
 public class Family extends Model {
 	public String name;
 	
+	@Hidden
 	@ManyToOne
 	public Melody root;
 	
 	public Integer melodyMinVoteToFilter = 10;
 	
 	public Integer depth = 0;
-	
-	public boolean finished = false;
 	
 	public Date created = new Date();
 	
@@ -37,6 +38,8 @@ public class Family extends Model {
 	public Double luckToAvoidSamePosition = 0.1;
 	
 	public Integer nbMelodiesAtBootstrap = 0; // inited on family creation
+	
+	public Boolean closed = false;
 	
 	public Family(String name) {
 		this.name = name;
@@ -70,7 +73,7 @@ public class Family extends Model {
 	/**
 	 * Depth is max generation of all melodies of the family
 	 */
-	public int getDepth() {
+	public Integer getDepth() {
 		return depth;
 	}
 	
@@ -89,13 +92,13 @@ public class Family extends Model {
 		// ("select sum(total) from Melody where family=?1 and generation=?2", this, generation)
 		return 0; //todo
 	}
-
-	public Family setFinished() {
-		finished = true;
-		return this;
-	}
 	
 	public static List<Family> list() {
 		return find("order by date desc").fetch();
+	}
+	
+	@Override
+	public String toString() {
+	    return name;
 	}
 }
