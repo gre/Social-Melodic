@@ -51,11 +51,15 @@ Mode random: algo génétique etc..
  - Une page "random" sur laquel on choisi si on aime ou pas, puis rechargement avec une autre mélodie non votée
  - Une page de visualisation des familles de mélodies et de parcours de l'arbre d'évolution (version simple pour l'instant)
  - Timeout sur l'application (10s par exemple) qui remplace le loader par un message d'erreur, et qui informe le serveur d'un probleme. Celui ci log les infos necessaires à sa résolution.
+ - le client doit pouvoir créer et descendre dans sa branche, jusqu'à fin de branche (incapacité d'aller plus loin)
+ - à un certain moment, la famille se termine et on conserve les branches finalisés. Un vote s'effectue sur les feuilles.
 
  ** priorité moyenne
 
  - Ajouter les liens de partages sociaux "share this on twitter, ..."
  - Ajouter les ambients et drums
+ - Pouvoir créer une famille (initialiser les options)
+ - Ajouter un timbre personnalisable
 
   * priorité faible
  

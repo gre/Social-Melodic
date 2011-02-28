@@ -75,4 +75,15 @@ public class Application extends Controller {
 			voter.vote(m, act.equals("like"));
 		random();
 	}
+
+    public static void adminLogin() {
+        render();
+    }
+    public static void adminAuth(String login, String password) {
+        if("admin".equals(login) && "aqwzsx".equals(password)) {
+            session.put("admin", "true");
+            Admin.index();
+        }
+        adminLogin();
+    }
 }

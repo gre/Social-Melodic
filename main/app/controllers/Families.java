@@ -1,8 +1,11 @@
 package controllers;
 
-import play.mvc.Controller;
-import play.mvc.With;
+import play.*;
+import play.mvc.*;
+import models.Family;
 
+@With(Admin.class)
+@CRUD.For(Family.class)
 public class Families extends CRUD {
-
+    
 }

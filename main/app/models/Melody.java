@@ -39,6 +39,8 @@ public class Melody extends Model {
 	
 	public Integer mutation = 0;
 	
+	public Boolean sterile = false;
+	
 	public Date date = new Date();
 
 	@OneToMany(mappedBy="melody")
@@ -96,6 +98,9 @@ public class Melody extends Model {
 			family.depth = generation + 1;
 			family.save();
 		}
+        if(!hasChildrens()) {
+            sterile = true;
+        }
 		return this;
 	}
 
@@ -161,9 +166,6 @@ public class Melody extends Model {
 		childrens.add(keep);
 		save();
 		keep.createChildrens();
-		if(!keep.hasChildrens()) {
-			family.setFinished();
-		}
 	}
 	
 	public void vote(boolean like) {
@@ -173,11 +175,20 @@ public class Melody extends Model {
 		parent.checkFilter();
 	}
 	
+	public static JPAQuery votables(LogVoter voter) {
+	    return find("from Melody m where parent is not null and total < family.melodyMinVoteToFilter and ?1 not in (select voter from LogVote where melody=m) order by generation asc, total asc", voter);
+	}
+	
 	public static Melody chooseRandom(LogVoter voter) {
-		List<Melody> melodies = find("from Melody m where parent is not null and total < family.melodyMinVoteToFilter and ?1 not in (select voter from LogVote where melody=m) order by total asc", voter).fetch(50);
-		if(melodies==null || melodies.size()<=0) {
-			return null;
+		List<Melody> melodies = votables(voter).fetch(50);
+		if(melodies.size()==0) {
+		    Melody melodyWithNoChild = Melody.find("from Melody m where sterile = false and parent is not null and m not in (select parent from Melody) order by generation asc, likes desc").first();
+		    if(melodyWithNoChild!=null) {
+		        melodyWithNoChild.createChildrens();
+		        melodies = votables(voter).fetch(50);
+		    }
 		}
+		if(melodies.size()==0) return null;
 		return melodies.get( (int)Math.floor(Math.random()*melodies.size()) );
 	}
 }
