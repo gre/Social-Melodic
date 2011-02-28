@@ -1,26 +1,14 @@
-Fonctionnement
-- une mélodie = cycle de x temps, un ensemble de notes
-- une note ajoutée à chaque cycle de génération : n fils qui attendent m votes chacun, le meilleur fils donne la prochaine génération
-- mutation pour certain fils sur les notes existantes
-- la plupart du temps 1 note chaque 4 temps, parfois 1 / 2 temps, rarement 1/1 temps, parfois 1 note après 8 temps
-- une note dans une mélodie : sa hauteur, sa position dans le cycle
-- ajouter une note à la suite, la longueur de la musique évolue au fur et à mesure jusqu'à un certain max
-- s'arrêter à un certain rang r de génération
-
-- plusieurs phases : construction de la mélodie. Ajout de son d'ambiance (basse), ajout de beats
-
-- Utiliser jsfx
-  samples:
-  -> notes: http://egonelbre.com/js/jsfx/index.html?load=[%22synth%22,0.0000,0.4000,0.1000,0.3000,1.3260,0.2240,20.0000,804.0000,2000.0000,0.0000,0.0000,0.0000,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000]
-  -> ambients : http://egonelbre.com/js/jsfx/index.html?load=[%22synth%22,0.0000,0.4000,0.1570,1.0720,0.2700,2.0000,947.0000,270.0000,1464.0000,-0.6780,-0.3100,0.0000,15.9907,-0.2363,0.9860,-0.1160,0.0790,0.1425,0.0000,0.0000,0.5440,-0.5060,0.7190,0.0340,0.2700,0.0000,0.7900]
-  -> bass : http://egonelbre.com/js/jsfx/index.html?load=[%22synth%22,0.0000,1.0000,0.0000,0.1040,0.1920,0.1720,20.0000,91.0000,216.0000,-0.6180,0.0120,0.2730,9.8959,0.1134,-0.0180,-0.0720,0.0370,0.1575,-0.0040,0.0000,0.1540,-0.0780,0.9030,-0.8200,0.7790,0.4460,-0.8120]
-
-
 - Specs, Notes d'implémentation et algorithmes
 Une note = un pitch (hauteur), une position (dans le loop)
-Une mélodie = un ensemble de notes
-Une famille = un arbre de mélodie.
+
+La plupart du temps, on saute une position sur 2 (positions paires), parfois on saute une note sur 4 (laisser 3 blancs entre deux notes)
+
+Une mélodie = un ensemble de notes, un nombre de notes (pitches), un nombre de loop (évolutif dans la famille)
+
 Sur chaque mélodie, on enregistre le nombre de votes positif et négatif.
+
+Une famille = un arbre de mélodie.
+
 Chaque niveau de l'arbre représente un ajout d'une note et parfois une ou plusieurs mutations sur les notes existantes. L'arbre s'arrête quand l'algo de génération ne peut plus créer de fils.
 Une mélodie a potentiellement n filles mélodies. Mais on ne représente que les branches existantes (raison évidente de place de bdd).
 C'est l'utilisateur qui construisent par leurs choix ces branches de mélodie.
@@ -35,7 +23,6 @@ Ca permet de limiter le nombre de branches.
 Si un utilisateur aime la branche, on avance d'une génération en séléctionant un fils existant (en mode génération: proba d'en créer un nouveau non existant)
 Si il n'aime pas : en mode génération: on crée un frère, en mode maturation, on passe à un autre noeud aléatoirement
 
-
 états de Family (état relatif à melodies) : 
 - Generation : c'est l'état initial, il permet aux utilisateurs de choisir leur branche préférée.
 - Maturation : cet état bloque la possibilité de créer ses propres branches. Par contre, on vote sur les noeuds existants.
@@ -43,6 +30,10 @@ Si il n'aime pas : en mode génération: on crée un frère, en mode maturation,
 
 
 TODO :
+
+  -> notes: http://egonelbre.com/js/jsfx/index.html?load=[%22synth%22,0.0000,0.4000,0.1000,0.3000,1.3260,0.2240,20.0000,804.0000,2000.0000,0.0000,0.0000,0.0000,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000]
+  -> ambients : http://egonelbre.com/js/jsfx/index.html?load=[%22synth%22,0.0000,0.4000,0.1570,1.0720,0.2700,2.0000,947.0000,270.0000,1464.0000,-0.6780,-0.3100,0.0000,15.9907,-0.2363,0.9860,-0.1160,0.0790,0.1425,0.0000,0.0000,0.5440,-0.5060,0.7190,0.0340,0.2700,0.0000,0.7900]
+  -> bass : http://egonelbre.com/js/jsfx/index.html?load=[%22synth%22,0.0000,1.0000,0.0000,0.1040,0.1920,0.1720,20.0000,91.0000,216.0000,-0.6180,0.0120,0.2730,9.8959,0.1134,-0.0180,-0.0720,0.0370,0.1575,-0.0040,0.0000,0.1540,-0.0780,0.9030,-0.8200,0.7790,0.4460,-0.8120]
 
 *** priorité forte
 
