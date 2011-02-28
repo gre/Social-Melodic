@@ -35,7 +35,7 @@ public class Family extends Model {
 	
 	public Double luckToEscape1of2 = 0.9;
 	public Double luckToEscape1of4 = 0.1;
-	public Double luckToAvoidSamePosition = 0.1;
+	public Double luckToAvoidSamePosition = 0.08;
 	
 	public Integer nbMelodiesAtBootstrap = 0; // inited on family creation
 	
@@ -52,14 +52,14 @@ public class Family extends Model {
 	public Family bootstrap(Integer nbMelodiesToBootstrap, Integer loopLength, Integer notesLength) {
 		this.nbMelodiesAtBootstrap = nbMelodiesToBootstrap;
 		Melody m = new Melody(loopLength, notesLength).save();
+		save();
+		setRoot(m);
 		for(int i=0; i<nbMelodiesToBootstrap; ++i) {
 		    Integer pitch = Note.randomIntonation(m.notesLength);
-		    Note n = new Note(pitch, i*2).save();
+		    Note n = new Note(pitch, m.indexOfQueueRandomNote()).save();
 		    m.notes.add(n);
 		}
 		m.save();
-		save();
-		setRoot(m);
 		m.createChildrens();
 		return this;
 	}
