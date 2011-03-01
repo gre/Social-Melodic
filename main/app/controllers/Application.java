@@ -32,8 +32,8 @@ public class Application extends Controller {
     
     public static void random() {
 		if(Family.count()==0) {
-		    new Family("Alpha").bootstrap(2, 16, 16).save();
-		    new Family("Typhon").bootstrap(5, 24, 20).save();
+		    new Family("Alpha").bootstrap(1, 20, 16).save();
+		    new Family("Typhon").bootstrap(2, 32, 20).save();
 		}
 		LogVoter voter = getVoter();
     	Melody melody = null;
@@ -88,14 +88,12 @@ public class Application extends Controller {
 		if(LogVote.count("byMelodyAndVoter", m, voter)==0) {
 			voter.vote(m, like);
 		}
-		Melody ref = like ? m : m.parent;
-		if(ref!=null) {
-			Melody next = ref.getRandomChild(voter.findMelodies(like ? false : null));
-			if(ref.family.status == Status.GENERATION && next==null)
-				next = ref.getOrCreateRandomChild();
-			if(next!=null) 
-				melody(next.id);
-		}
+		Melody ref = like || m.parent==null ? m : m.parent;
+		Melody next = ref.getRandomChild(voter.findMelodies(like ? false : null));
+		if(ref.family.status == Status.GENERATION && next==null)
+			next = ref.getOrCreateRandomChild();
+		if(next!=null) 
+			melody(next.id);
 		random();
 	}
 
