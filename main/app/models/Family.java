@@ -21,9 +21,9 @@ public class Family extends Model {
 	@ManyToOne
 	public Melody root;
 	
-	public Integer melodyMinVoteToFilter = 10;
+	public Integer melodyMinVoteToFilter = 10; // remove this for next algo
 	
-	public Integer depth = 0;
+	public Integer depth = 0; // remove this (what for ?)
 	
 	public Date created = new Date();
 	
@@ -39,7 +39,7 @@ public class Family extends Model {
 	
 	public Integer nbMelodiesAtBootstrap = 0; // inited on family creation
 	
-	public Boolean closed = false;
+	public Boolean closed = false; // TODO : a enum for states
 	
 	public Family(String name) {
 		this.name = name;

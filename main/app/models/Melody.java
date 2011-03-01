@@ -39,7 +39,7 @@ public class Melody extends Model {
 	
 	public Integer mutation = 0;
 	
-	public Boolean sterile = false;
+	public Boolean sterile = false; // détermine si la mélodie est une feuille
 	
 	public Date date = new Date();
 

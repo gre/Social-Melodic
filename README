@@ -1,3 +1,5 @@
+Ce README comporte toutes les notes et les idées que l'application pourrait implémenter. Ce n'est pas forcément le cas ! (experiments)
+
 - Specs, Notes d'implémentation et algorithmes
 Une note = un pitch (hauteur), une position (dans le loop)
 
@@ -9,9 +11,12 @@ Sur chaque mélodie, on enregistre le nombre de votes positif et négatif.
 
 Une famille = un arbre de mélodie.
 
-Chaque niveau de l'arbre représente un ajout d'une note et parfois une ou plusieurs mutations sur les notes existantes. L'arbre s'arrête quand l'algo de génération ne peut plus créer de fils.
+Chaque niveau de l'arbre représente un ajout d'une note et parfois une ou plusieurs mutations sur les notes existantes.
+L'arbre s'arrête quand l'algo de génération ne peut plus créer de fils.
+Le niveau n'est pas forcément le même pour toutes ces mélodies.
+Une mélodie qui ne peut plus créer de fils est appelé ici feuille.
 Une mélodie a potentiellement n filles mélodies. Mais on ne représente que les branches existantes (raison évidente de place de bdd).
-C'est l'utilisateur qui construisent par leurs choix ces branches de mélodie.
+Ce sont les utilisateurs qui construisent par leurs choix ces branches de mélodie.
 A la première visite d'un utilisateur, on choisit une mélodie existante parmi l'arbre d'une famille (si l'état le permet).
 Arrivé à un certain stade, on arrête la création de nouvelles branches, et on laisse les utilisateurs voter sur les branches existantes.
 On a plus de chance de tomber sur des feuilles. On donne également plus de chances aux feuilles les moins votés pour avoir la meilleure précision.
@@ -19,14 +24,58 @@ Une fois qu'on a assez de votes sur chaque feuille, on peut donner le classement
 Soit en comparant le ratio like / dislike , soit avec like-dislike (à réfléchir)
 
 A tout moment, random redirige sur n'importe quelle noeud, même en plein milieu d'une branche.
-Ca permet de limiter le nombre de branches.
-Si un utilisateur aime la branche, on avance d'une génération en séléctionant un fils existant (en mode génération: proba d'en créer un nouveau non existant)
+Cela permet de limiter le nombre de branches.
+Si un utilisateur aime la branche, on avance d'une génération en sélectionnant un fils existant (en mode génération: proba d'en créer un nouveau non existant)
 Si il n'aime pas : en mode génération: on crée un frère, en mode maturation, on passe à un autre noeud aléatoirement
 
 états de Family (état relatif à melodies) : 
-- Generation : c'est l'état initial, il permet aux utilisateurs de choisir leur branche préférée.
-- Maturation : cet état bloque la possibilité de créer ses propres branches. Par contre, on vote sur les noeuds existants.
+- Generation : c'est l'état initial, il permet aux utilisateurs de choisir/créer leur branche préférée.
+- Maturation : cet état bloque la possibilité de créer ses propres branches. Par contre, on vote sur les noeuds existants. Il y a plus de chance de voter pour des générations élevés. On fait en sorte d'équilibrer le nombre de votes de chaque mélodie de la famille.
 - Dead : La famille est fermé. Il n'est plus possible de voter. On est capable de donner le classement des meilleurs mélodies générées.
+
+En résumé voici un apercu des algo pour les différents états de la famille :
+
+Pour une famille F :
+
+Initialisation de la famille : Soit par l'ordinateur, soit par l'utilisateur
+- avec un certain nombre de paramètres (qui déterminent l'évolution de la famille, et les passages des différents états)
+- bootstrap possible de N notes pour la mélodie root
+- nombre initial de loop, nombre max de loop
+- nombre de notes
+- un nom unique (non existant et [a-z]{3,10} par ex)
+
+en mode Generation :
+ 0. première visite : redirection aléatoire vers n'importe quelle mélodie de la famille (noeud dans l'arbre)
+ 1. Melodie M : on est sur une mélodie, deux choix attendent l'utilisateur like (2) et dislike (3)
+ 2. Clic sur like : on essayer de descendre d'une génération :
+  - si impossible: on a fini, on informe l'utilisateur et repasse à l'étape 0.
+  - si possible: on prends un fils au hasard. Si on en trouve pas on en crée un. On le sélectionne -> étape 1.
+ 3. Clic sur dislike :
+  - on cherche un frère de la mélodie jamais voté "dislike" par l'utilisateur actuel. Si on en trouve un, on le sélectionne (-> étape 1)
+  - Sinon, on essaye d'en créer un. Si impossible, on redirige vers 0.
+
+Generation -> Maturation : lorsqu'on atteint un nombre suffisant de feuilles
+
+Passage à l'état maturation :
+ - Filtrage d'une partie des noeuds (peut-être les noeuds qui n'ont pas de fils et qui ne sont pas assez évolué en terme de génération et également les noeuds qui ont trop de frères...)
+
+en mode Maturation :
+  0. idem, mais on laisse plus de chance à arriver sur une génération élevée
+  1. idem
+  2. clic sur like : On essaye de descendre la branche (pas de création), si impossible on retourne sur 0
+  3. clic sur dislike : on essaye de switch sur un frère non voté dislike, sinon on retourne sur 0
+
+Maturation -> Dead : Lorsque toute les feuilles ont atteint un certain nombre de votes.
+
+Dead :
+Calculer le classement: plusieurs idées:
+- Comparer uniquement les feuilles
+-> Comparer les branches de ces feuilles (la somme des votes des noeuds de la branche d'une feuille)
+
+Comparer ?
+like - dislike : équitable si égalité du nombre de votes
+like / dislike : équitable sur nombre conséquent de votes
+So what ?
 
 
 TODO :
