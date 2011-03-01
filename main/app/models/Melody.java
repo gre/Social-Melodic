@@ -9,7 +9,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-
 import play.db.jpa.Model;
 
 /**
@@ -82,28 +81,65 @@ public class Melody extends Model {
 		return this;
 	}
 	
-	public Melody createChildrens() {
-		int total = (int) Math.round(notesLength * family.percentOfAllPossibilities);
-		if(total<=0) return this;
-		while(total-->0) {
-			Integer position = indexOfQueueRandomNote();
-			if(position>=0) {
-				Note note = new Note(Math.random()<family.luckOfJustIntonation ? Note.randomJustIntonation(notesLength) : Note.randomNotJustIntonation(notesLength), position).save();
-				Melody melody = new Melody(this, note).applyMutation().save();
-				childrens.add(melody);
+	public boolean sameAs(Melody m) {
+		if(loopLength!=m.loopLength) return false;
+		Vector<List<Integer>> notesArray = getNotesArray();
+		Vector<List<Integer>> mNotesArray = m.getNotesArray();
+		try {
+			for(int i=0; i<loopLength; ++i) {
+				List<Integer> notesPos = notesArray.get(i);
+				List<Integer> mNotesPos = mNotesArray.get(i);
+				if(!notesPos.equals(mNotesPos)) return false;
 			}
 		}
-		save();
-		if(generation+1 > family.depth) {
-			family.depth = generation + 1;
-			family.save();
+		catch(Exception e) {
+			return false;
 		}
-        if(!hasChildrens()) {
-            sterile = true;
-        }
-		return this;
+		return true;
+	}
+	
+	public Melody searchSameChild(Melody melody) {
+		for(Melody m : childrens)
+			if(m.sameAs(melody))
+				return m;
+		return null;
+	}
+	
+	/**
+	 * @return null if no place has been found for this children (this time),
+	 * else return the melody getted or created (if possible)
+	 */
+	public Melody getOrCreateRandomChild() {
+		Integer position = indexOfQueueRandomNote();
+		if(position>=0) {
+			Note note = new Note(Math.random()<family.luckOfJustIntonation ? Note.randomJustIntonation(notesLength) : Note.randomNotJustIntonation(notesLength), position).save();
+			Melody m = new Melody(this, note).applyMutation().save();
+			Melody search = searchSameChild(m);
+			if(search!=null) {
+				m.delete();
+				return search;
+			}
+			else {
+				childrens.add(m);
+				save();
+				return m;
+			}
+		}
+		else {
+			if(childrens.size()==0) {
+				sterile = true;
+				save();
+			}
+		}
+		return null;
 	}
 
+	public Melody getRandomChild(List<Melody> ignore) {
+		List<Melody> melodies = new ArrayList<Melody>(childrens);
+		if(ignore!=null) melodies.removeAll(ignore);
+		return melodies.size()==0 ? null : melodies.get((int)Math.floor(melodies.size()*Math.random()));
+	}
+	
 	private Melody applyMutation() {
 		while(Math.random() < family.luckOfMutation) {
 			Note n = notes.get((int) Math.floor(Math.random()*notes.size()));
@@ -117,17 +153,17 @@ public class Melody extends Model {
 	public int indexOfQueueRandomNote() {
 		boolean escape1of2 = Math.random() < family.luckToEscape1of2;
 		boolean escape1of4 = Math.random() < family.luckToEscape1of4;
-		boolean avoidSamePosition = Math.random() < family.luckToAvoidSamePosition;
-		for(int pos = 0; pos<loopLength; pos += escape1of2 ? (escape1of4 ? 4 : 2) : 1 )
-			if(avoidSamePosition || getNotesForPosition(pos).size()==0)
+		for(int pos = 0; pos<loopLength; pos += escape1of2 ? (escape1of4 ? 4 : 2) : 1 ) {
+			if(getNotesForPosition(pos).size()==0 || Math.random()<family.luckToAvoidSamePosition)
 				return pos;
+		}
 		return -1;
 	}
 	
 	public List<Note> getNotesForPosition(Integer i) {
 		List<Note> l = new ArrayList<Note>();
 		for(Note n : notes)
-			if(n.pos == i)
+			if(n.pos.equals(i))
 				l.add(n);
 		return l;
 	}
@@ -136,59 +172,19 @@ public class Melody extends Model {
 	    Vector< List<Integer> > array = new Vector<List<Integer>>(loopLength);
 	    for(int i=0; i<loopLength; ++i)
 	        array.add(new ArrayList<Integer>());
-	    for(Note n : notes) {
-	        List<Integer> notes = array.get(n.pos);
-	        notes.add(n.pitch);
-	    }
+	    for(Note n : notes)
+	        array.get(n.pos).add(n.pitch);
 	    return array;
-	}
-	
-	public boolean childrensReadyToFilter() {
-		return count("parent=?1 and total < ?2", this, family.melodyMinVoteToFilter) == 0;
 	}
 	
 	public boolean hasChildrens() {
 	    return childrens.size()>0;
 	}
 	
-	public void checkFilter() {
-        if(!hasChildrens() && childrensReadyToFilter())
-            filterChildrens();
-	}
-	
-	public void filterChildrens() {
-		Melody keep = find("parent=?1 order by likes desc", this, family.melodyMinVoteToFilter).first();
-		for(Melody m : childrens) {
-			if(!m.equals(keep))
-				m.delete();
-		}
-		childrens = new ArrayList<Melody>();
-		childrens.add(keep);
-		save();
-		keep.createChildrens();
-	}
-	
 	public void vote(boolean like) {
 		if(like) ++ likes;
 		++ total;
 		save();
-		parent.checkFilter();
 	}
 	
-	public static JPAQuery votables(LogVoter voter) {
-	    return find("from Melody m where parent is not null and total < family.melodyMinVoteToFilter and ?1 not in (select voter from LogVote where melody=m) order by generation asc, total asc", voter);
-	}
-	
-	public static Melody chooseRandom(LogVoter voter) {
-		List<Melody> melodies = votables(voter).fetch(50);
-		if(melodies.size()==0) {
-		    Melody melodyWithNoChild = Melody.find("from Melody m where sterile = false and parent is not null and m not in (select parent from Melody) order by generation asc, likes desc").first();
-		    if(melodyWithNoChild!=null) {
-		        melodyWithNoChild.createChildrens();
-		        melodies = votables(voter).fetch(50);
-		    }
-		}
-		if(melodies.size()==0) return null;
-		return melodies.get( (int)Math.floor(Math.random()*melodies.size()) );
-	}
 }

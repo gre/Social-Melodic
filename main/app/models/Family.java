@@ -1,31 +1,47 @@
 package models;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
+
+import org.hibernate.annotations.Type;
 
 import controllers.CRUD.Hidden;
 
+import play.data.validation.Match;
+import play.data.validation.Required;
+import play.db.helper.JpaHelper;
+import play.db.helper.SqlQuery;
 import play.db.jpa.Model;
+import play.db.jpa.GenericModel.JPAQuery;
 
 /**
  * Family of a Song. It's a tree of melody generations.
  */
 @Entity
 public class Family extends Model {
+
+	@Required
+	@Match(value="[a-z]{3,10}")
 	public String name;
+	
+    @Enumerated(EnumType.STRING)
+	public Status status = Status.GENERATION;
 	
 	@Hidden
 	@ManyToOne
 	public Melody root;
 	
-	public Integer melodyMinVoteToFilter = 10; // remove this for next algo
-	
-	public Integer depth = 0; // remove this (what for ?)
-	
 	public Date created = new Date();
+	
+	public Integer nbMelodiesAtBootstrap = 0; // inited on family creation
 	
 	// Properties
 
@@ -35,11 +51,11 @@ public class Family extends Model {
 	
 	public Double luckToEscape1of2 = 0.9;
 	public Double luckToEscape1of4 = 0.1;
-	public Double luckToAvoidSamePosition = 0.08;
+	public Double luckToAvoidSamePosition = 0.02;
 	
-	public Integer nbMelodiesAtBootstrap = 0; // inited on family creation
-	
-	public Boolean closed = false; // TODO : a enum for states
+	public enum Status {
+		GENERATION, MATURATION, DEAD;
+	}
 	
 	public Family(String name) {
 		this.name = name;
@@ -55,12 +71,10 @@ public class Family extends Model {
 		save();
 		setRoot(m);
 		for(int i=0; i<nbMelodiesToBootstrap; ++i) {
-		    Integer pitch = Note.randomIntonation(m.notesLength);
-		    Note n = new Note(pitch, m.indexOfQueueRandomNote()).save();
+		    Note n = new Note(Note.randomIntonation(m.notesLength), m.indexOfQueueRandomNote()).save();
 		    m.notes.add(n);
 		}
 		m.save();
-		m.createChildrens();
 		return this;
 	}
 	
@@ -70,29 +84,6 @@ public class Family extends Model {
 		return this;
 	}
 	
-	/**
-	 * Depth is max generation of all melodies of the family
-	 */
-	public Integer getDepth() {
-		return depth;
-	}
-	
-	/**
-	 * Total vote to pass next depth for a generation
-	 */
-	public long getVoteRequiredForGeneration(Integer generation) {
-		return melodyMinVoteToFilter*Melody.count("byFamilyByGeneration", this, generation);
-	}
-	
-	/**
-	 * Total vote elapsed for a generation
-	 */
-	public int getVoteElapsedForGeneration(int generation) {
-		//return melodyMinVoteToFilter*Melody.count("byFamilyByGeneration", this, generation);
-		// ("select sum(total) from Melody where family=?1 and generation=?2", this, generation)
-		return 0; //todo
-	}
-	
 	public static List<Family> list() {
 		return find("order by date desc").fetch();
 	}
@@ -100,5 +91,30 @@ public class Family extends Model {
 	@Override
 	public String toString() {
 	    return name;
+	}
+	
+	public static List<Family> getOpenFamilies() {
+		Status[] types = {Status.GENERATION, Status.MATURATION};
+		return find("status in "+SqlQuery.inlineParam(types)+" order by created desc").fetch();
+	}
+	
+	public static Family getRandomFamily() {
+		List<Family> families = getOpenFamilies();
+		return families.size()==0 ? null : families.get((int)Math.floor(Math.random()*families.size()));
+	}
+	
+	public Melody getRandomMelody(List<Melody> ignore) {
+		Set<Long> ids = new HashSet<Long>();
+		ids.add(0L); // hack to avoid empty set sql synthax error
+		if(ignore!=null) for(Melody m : ignore) ids.add(m.id);
+		List<Melody> melodies = Melody.find("family = ?1 and id not in "+SqlQuery.inlineParam(ids)+" order by generation desc, total asc", this).fetch();
+		if(melodies.size()==0) return null;
+		if(status == Status.GENERATION) { // linear luck
+			return melodies.get((int)Math.floor(Math.random()*melodies.size()));
+		}
+		else if(status==Status.MATURATION) { // more luck to retrieve a high generation melody (random*random)
+			return melodies.get((int) Math.floor(Math.random()*Math.random()*melodies.size()) );
+		}
+		return null;
 	}
 }

@@ -8,6 +8,7 @@ import play.mvc.*;
 
 
 import models.*;
+import models.Family.Status;
 
 public class Application extends Controller {
 
@@ -34,7 +35,19 @@ public class Application extends Controller {
 		    new Family("Alpha").bootstrap(2, 16, 16).save();
 		    new Family("Typhon").bootstrap(5, 24, 20).save();
 		}
-    	Melody melody = Melody.chooseRandom(getVoter());
+		LogVoter voter = getVoter();
+    	Melody melody = null;
+    	Family family = Family.getRandomFamily();
+    	if(family==null)
+    		noMoreMelodies();
+    	melody = family.getRandomMelody(voter.findMelodies(false));
+    	if(melody == null) {
+    		// try for all
+	    	for(Family f : Family.getOpenFamilies()) {
+	    		melody = f.getRandomMelody(voter.findMelodies(false));
+	    		if(melody != null) break;
+	    	}
+    	}
     	if(melody==null) 
     	    noMoreMelodies();
     	melody(melody.id);
@@ -70,9 +83,19 @@ public class Application extends Controller {
 		if(Validation.hasErrors()) notFound();
 		Melody m = Melody.findById(id);
 		notFoundIfNull(m);
+		boolean like = act.equals("like");
 		LogVoter voter = getVoter();
-		if(LogVote.count("byMelodyAndVoter", m, voter)==0 && m.total < m.family.melodyMinVoteToFilter)
-			voter.vote(m, act.equals("like"));
+		if(LogVote.count("byMelodyAndVoter", m, voter)==0) {
+			voter.vote(m, like);
+		}
+		Melody ref = like ? m : m.parent;
+		if(ref!=null) {
+			Melody next = ref.getRandomChild(voter.findMelodies(like ? false : null));
+			if(ref.family.status == Status.GENERATION && next==null)
+				next = ref.getOrCreateRandomChild();
+			if(next!=null) 
+				melody(next.id);
+		}
 		random();
 	}
 
