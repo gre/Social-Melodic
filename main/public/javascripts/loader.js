@@ -7,8 +7,9 @@ var Loader = function(callback){
     callback();
   }
   $(document).ready(function(){
-    if(!window.Worker || melody.webWorkerReady)
+    if(!window.Worker || melody.webWorkerReady) {
       main();
+    }
     else {
       $(document).one('webWorkerReady', main);
       setTimeout(main, 500); // Max time before web worker state ignoring

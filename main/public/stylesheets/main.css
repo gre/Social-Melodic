@@ -168,3 +168,10 @@ footer {
   content: '\2622';
   margin: 2px;
 }
+
+footer .usingWebWorker.true {
+  color: #0F0;
+}
+footer .usingWebWorker.false {
+  color: #F00;
+}

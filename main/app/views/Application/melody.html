@@ -88,6 +88,13 @@ $(function(){
       player.play();
     });
     
+    if(melody.webWorkerReady) {
+      $('.usingWebWorker').addClass('true').removeClass('false');
+    }
+    else {
+      $('.usingWebWorker').removeClass('true').addClass('false');
+    }
+    
   });
       
 });

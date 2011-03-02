@@ -14,11 +14,13 @@ $(document).ready(function(){
         }
         worker.terminate();
       };
-      worker.onerror = function(arguments){
+      worker.onerror = function(z){
         melody.webWorkerReady = false;
         worker.terminate();
       };
-      worker.postMessage(["sine",0,0,0,0,0,0,20,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+      var message = ["sine",0,0,0,0,0,0,20,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+      if(JSON) message = JSON.stringify(message);
+      worker.postMessage(message);
     }
   }
 });
@@ -51,7 +53,7 @@ melody.Generator = function(primitives) {
       worker.onmessage = function(e) {
         callback(audio.data64ToAudio(e.data));
       }
-      worker.postMessage(all);
+      worker.postMessage(!window.JSON ? all : JSON.stringify(all));
     }
     else {
       melody.utils.mixPrimitives(all, function(res){
