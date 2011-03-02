@@ -85,18 +85,17 @@ TODO :
   -> bass : http://egonelbre.com/js/jsfx/index.html?load=[%22synth%22,0.0000,1.0000,0.0000,0.1040,0.1920,0.1720,20.0000,91.0000,216.0000,-0.6180,0.0120,0.2730,9.8959,0.1134,-0.0180,-0.0720,0.0370,0.1575,-0.0040,0.0000,0.1540,-0.0780,0.9030,-0.8200,0.7790,0.4460,-0.8120]
 
 *** priorité forte
-
- - Implémenter la partie serveur
-Mode random: algo génétique etc..
- - Une page "random" sur laquel on choisi si on aime ou pas, puis rechargement avec une autre mélodie non votée
- - Une page de visualisation des familles de mélodies et de parcours de l'arbre d'évolution (version simple pour l'instant)
+ - implémenter le passage à l'état maturation ainsi que l'état dead
  - Timeout sur l'application (10s par exemple) qui remplace le loader par un message d'erreur, et qui informe le serveur d'un probleme. Celui ci log les infos necessaires à sa résolution.
- - le client doit pouvoir créer et descendre dans sa branche, jusqu'à fin de branche (incapacité d'aller plus loin)
- - à un certain moment, la famille se termine et on conserve les branches finalisés. Un vote s'effectue sur les feuilles.
-
+ - Authentification par facebook, twitter, ...
+ - page d'accueil avec petite aide + top melodies
+ - page melodyNotFound
+ - page de mélodie feuille (plus possible de créer de fils) -> c'est seulement ici qu'on met les liens share
+ 
  ** priorité moyenne
-
- - Ajouter les liens de partages sociaux "share this on twitter, ..."
+ - liste des familles (avec infos : état, nombre de like et dislike totaux, ...)
+ - page d'aide (plus approfondie)
+ - Une page de visualisation des familles de mélodies et de parcours de l'arbre d'évolution (version simple pour l'instant)
  - Ajouter les ambients et drums
  - Pouvoir créer une famille (initialiser les options)
  - Ajouter un timbre personnalisable

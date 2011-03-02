@@ -59,6 +59,7 @@ public class Application extends Controller {
 	}
 
     public static void melodyNotFound() {
+    	response.status = 404;
     	render();
     }
     

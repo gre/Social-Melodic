@@ -2,13 +2,17 @@ package models;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+
+import play.db.helper.SqlQuery;
 import play.db.jpa.Model;
 
 /**
@@ -153,9 +157,17 @@ public class Melody extends Model {
 	public int indexOfQueueRandomNote() {
 		boolean escape1of2 = Math.random() < family.luckToEscape1of2;
 		boolean escape1of4 = Math.random() < family.luckToEscape1of4;
-		for(int pos = 0; pos<loopLength; pos += escape1of2 ? (escape1of4 ? 4 : 2) : 1 ) {
-			if(getNotesForPosition(pos).size()==0 || Math.random()<family.luckToAvoidSamePosition)
-				return pos;
+		Integer step = escape1of2 ? (escape1of4 ? 4 : 2) : 1;
+		if(Math.random()<family.luckToIgnoreSamePosition) {
+			Integer highest = getHighestPosition();
+			if(highest<0) return 0;
+			return ((int)Math.floor((Math.random()*(double)highest) / (double)step))*step;
+		}
+		else {
+			
+			for(int pos = 0; pos<loopLength; pos += step )
+				if(getNotesForPosition(pos).size()==0)
+					return pos;
 		}
 		return -1;
 	}
@@ -166,6 +178,14 @@ public class Melody extends Model {
 			if(n.pos.equals(i))
 				l.add(n);
 		return l;
+	}
+	
+	public Integer getHighestPosition() {
+		Integer highest = -1;
+		for(Note n : notes)
+			if(n.pos > highest)
+				highest = n.pos;
+		return highest;
 	}
 	
 	public Vector<List<Integer>> getNotesArray() {
@@ -186,5 +206,4 @@ public class Melody extends Model {
 		++ total;
 		save();
 	}
-	
 }

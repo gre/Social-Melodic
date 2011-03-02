@@ -6,10 +6,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.Type;
 
@@ -38,20 +40,20 @@ public class Family extends Model {
 	@Hidden
 	@ManyToOne
 	public Melody root;
+
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="family")
+	public List<Melody> melodies = new ArrayList<Melody>();
 	
 	public Date created = new Date();
 	
-	public Integer nbMelodiesAtBootstrap = 0; // inited on family creation
-	
 	// Properties
 
-	public Double luckOfMutation = 0.05;
-	public Double percentOfAllPossibilities = 0.6;
+	public Double luckOfMutation = 0.1;
 	public Double luckOfJustIntonation = 0.7;
 	
-	public Double luckToEscape1of2 = 0.9;
+	public Double luckToEscape1of2 = 0.85;
 	public Double luckToEscape1of4 = 0.1;
-	public Double luckToAvoidSamePosition = 0.02;
+	public Double luckToIgnoreSamePosition = 0.2;
 	
 	public enum Status {
 		GENERATION, MATURATION, DEAD;
@@ -66,7 +68,6 @@ public class Family extends Model {
 	}
 	
 	public Family bootstrap(Integer nbMelodiesToBootstrap, Integer loopLength, Integer notesLength) {
-		this.nbMelodiesAtBootstrap = nbMelodiesToBootstrap;
 		Melody m = new Melody(loopLength, notesLength).save();
 		save();
 		setRoot(m);
@@ -107,7 +108,8 @@ public class Family extends Model {
 		Set<Long> ids = new HashSet<Long>();
 		ids.add(0L); // hack to avoid empty set sql synthax error
 		if(ignore!=null) for(Melody m : ignore) ids.add(m.id);
-		List<Melody> melodies = Melody.find("family = ?1 and id not in "+SqlQuery.inlineParam(ids)+" order by generation desc, total asc", this).fetch();
+		List<Melody> melodies = Melody.find("family = ?1 and likes>0 and id not in "+SqlQuery.inlineParam(ids)+" order by generation desc, total asc", this).fetch();
+		if(melodies.size()==0) melodies = Melody.find("family = ?1 and id not in "+SqlQuery.inlineParam(ids)+" order by generation desc, total asc", this).fetch();
 		if(melodies.size()==0) return null;
 		if(status == Status.GENERATION) { // linear luck
 			return melodies.get((int)Math.floor(Math.random()*melodies.size()));
