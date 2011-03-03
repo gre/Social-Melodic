@@ -100,6 +100,8 @@ TODO :
  - Pouvoir créer une famille (initialiser les options)
  - Ajouter un timbre personnalisable
  - Ajouter modernizr
+ - Trouver un framework javascript sympa pour mieux organiser ca
+ - Améliorer le loader : on doit tout afficher sauf les notes, et prévoir le loading dans le player
 
   * priorité faible
  
