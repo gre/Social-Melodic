@@ -100,12 +100,15 @@ TODO :
  - Pouvoir créer une famille (initialiser les options)
  - Ajouter un timbre personnalisable
  - Ajouter modernizr
- - Trouver un framework javascript sympa pour mieux organiser ca
+ - Utiliser backbone.js comme framework
+ - mieux modulifier la partie graphique pour pouvoir facilement changer de librairie plus tard (au cas ou). Jouer avec appels de fonction externe et évenementiel.
  - Améliorer le loader : on doit tout afficher sauf les notes, et prévoir le loading dans le player
 
   * priorité faible
  
  - Internationaliser l'application (fr, en)
+ - Améliorer l'anglais
+ - Réaliser une vidéo de présentation en page d'accueil / ou bien une animation
 
 Mode création:
  - Une page d'édition de mélodie (valeur des notes au hover)
