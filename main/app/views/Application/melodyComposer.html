@@ -1,11 +1,9 @@
 #{extends './main.html' /}
 
 <header class="description">
-  <h2>a human-based melody generator *</h2>
-  <div>* People, through their choices, affect the evolution of melodies. 
-  Melodies will undergo a series of mutation, 
-  and continue to grow and improve themselves over generations. It's called a human-based genetic algorithm.
-  The more of you, the more changes will be fast and significant.</div>
+  <h2>a melody composer *</h2>
+  <div>* Move your notes however you want. People will votes your melodies. 
+  Best melodies can be used by the Melody generator.</div>
 </header>
 
 <div id="loading">
@@ -14,16 +12,6 @@
 
 <div id="main" style="display: none;">
   <section class="choicesContainer">
-    <div class="melody-infos">
-      <a href="@{family(melody.family.id)}" class="family" title="Family name">${melody.family.name}</a>
-      <span class="id" title="Melody number">${melody.id}</span>
-      <span class="generation" title="Generation (number of parents)">${melody.generation}</span>
-      <span class="mutation" title="Total of mutation">${melody.mutation}</span>
-    </div>
-    <ul class="choices hidden">
-      <li class="like"><a href="@{vote(melody.id, 'like')}">I like</a></li>
-      <li class="dislike"><a href="@{vote(melody.id, 'dislike')}">I don't like</a></li>
-    </ul>
     <div class="share">
       <div class="addthis_toolbox addthis_default_style addthis_32x32_style">
         <strong>Share this </strong>
@@ -39,11 +27,6 @@
     <canvas id="player"></canvas>
   </section>
 </div>
-
-<footer>
-  <p>Support: <span class="usingWebWorker">Worker</span></p>
-</footer>
-
 
 <script type="text/javascript">
   window.melody = { GeneratorWorker: "@{'/public/javascripts/worker.js'}" };
@@ -83,7 +66,8 @@ $(function(){
   
   // POC
   new Loader(function(){
-    var notes = ${melody.getNotesArray()};
+    
+    var notes = [];
     
     var canvas =  document.getElementById('player');
     
@@ -105,7 +89,6 @@ $(function(){
       $('#loading').hide();
       $('#main').show(); 
       $('.choices').show();
-      player.play();
     });
     
     if(melody.webWorkerReady) {

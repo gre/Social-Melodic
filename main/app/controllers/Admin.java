@@ -9,7 +9,7 @@ public class Admin extends Controller {
 	static void globals() {
 		// Permissions ...
 	    if(!session.contains("admin")) 
-	        Application.adminLogin();
+	        MelodyGenerator.adminLogin();
 	}
 	
 	public static void logout() {

@@ -1,4 +1,4 @@
-importScripts('jsfx/audio.js', 'jsfx/jsfx.js', 'melody-utils.js')
+importScripts('lib/jsfx/audio.js', 'lib/jsfx/jsfx.js', 'melody-utils.js')
 
 onmessage = function(e) {
   var arr = !JSON ? e.data : JSON.parse(e.data);

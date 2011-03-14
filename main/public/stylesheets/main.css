@@ -91,12 +91,14 @@ ul.choices {
   opacity: 0.2;
   font-weight: bold;
 }
-
-.description {
+header.description h2 {
+  margin: 5px;
+}
+header.description {
   font-style: italic;
   font-size: 0.9em;
   color: #333;
-  padding: 10px;
+  padding: 5px;
   border: 0px dashed rgba(0,0,0,0.2);
   border-width: 2px 0;
 }

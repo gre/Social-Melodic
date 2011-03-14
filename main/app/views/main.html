@@ -9,18 +9,12 @@
     #{get 'moreStyles' /}
     <link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.png'}">
     
-    #{script "jquery-1.5.min.js" /}
-    #{script "processing-1.0.0.min.js" /}
-    #{script "jsfx/audio.js" /}
-    #{script "jsfx/jsfx.js" /}
-    
-    <script type="text/javascript">
-      window.melody = { GeneratorWorker: "@{'/public/javascripts/worker.js'}" };
-    </script>
-    #{script "melody-utils.js" /}
-    #{script "melody-player.js" /}
-    #{script "melody-generator.js" /}
-    #{script "loader.js" /}
+    #{script "lib/jquery.min.js" /}
+    #{script "lib/underscore-min.js" /}
+    #{script "lib/backbone-min.js" /}
+    #{script "lib/processing-1.0.0.min.js" /}
+    #{script "lib/jsfx/audio.js" /}
+    #{script "lib/jsfx/jsfx.js" /}
     
     #{get 'moreScripts' /}
     <body>
