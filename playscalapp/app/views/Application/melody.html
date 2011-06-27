@@ -1,0 +1,123 @@
+#{extends './main.html' /}
+
+<header class="description">
+  <h2>a human-based melody generator *</h2>
+  <div>* People, through their choices, affect the evolution of melodies. 
+  Melodies will undergo a series of mutation, 
+  and continue to grow and improve themselves over generations. It's called a human-based genetic algorithm.
+  The more of you, the more changes will be fast and significant.</div>
+</header>
+
+<div id="loading">
+  <h2><img src="/public/images/ajax-loader.gif" /> Loading...</h2> 
+</div>
+
+<div id="main" style="display: none;">
+  <section class="choicesContainer">
+    *{
+    <div class="melody-infos">
+      <a href="@{family(melody.family.id)}" class="family" title="Family name">${melody.family.name}</a>
+      <span class="id" title="Melody number">${melody.id}</span>
+      <span class="generation" title="Generation (number of parents)">${melody.generation}</span>
+      <span class="mutation" title="Total of mutation">${melody.mutation}</span>
+    </div>
+  }*
+    <ul class="choices hidden">
+      <li class="like"><a href="@{vote(melody.id, 'like')}">I like</a></li>
+      <li class="dislike"><a href="@{vote(melody.id, 'dislike')}">I don't like</a></li>
+    </ul>
+    <div class="share">
+      <div class="addthis_toolbox addthis_default_style addthis_32x32_style">
+        <strong>Share this </strong>
+        <a class="addthis_button_facebook"></a>
+        <a class="addthis_button_twitter"></a>
+        <a class="addthis_button_digg"></a>
+        <a class="addthis_button_reddit"></a>
+      </div>
+      <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4d6411c970947c4d"></script>
+    </div>
+  </section>
+  <section class="playerContainer">
+    <canvas id="player"></canvas>
+  </section>
+</div>
+
+<footer>
+  <p>Support: <span class="usingWebWorker">Worker</span></p>
+</footer>
+
+
+<script type="text/javascript">
+  window.melody = { GeneratorWorker: "@{'/public/javascripts/worker.js'}" };
+</script>
+#{script "melody-utils.js" /}
+#{script "melody-player.js" /}
+#{script "melody-generator.js" /}
+#{script "loader.js" /}
+
+<script type="text/javascript">
+$(function(){
+  
+  // From modernizr
+  var canvasSupport = function(){
+    var elem = document.createElement( 'canvas' );
+    return !!(elem.getContext && elem.getContext('2d'));
+  }
+  var waveSupport = function(){
+    var elem = document.createElement('audio'), bool = !!elem.canPlayType;
+    if(bool) return elem.canPlayType('audio/wav; codecs="1"');
+  }
+  var unsupported = [];
+  if(!canvasSupport()) unsupported.push('HTML5 Canvas');
+  if(!waveSupport()) unsupported.push('Audio wave format');
+  if(unsupported.length) {
+    $('#loading').replaceWith("<h2>Your browser doesn't support "+unsupported.join(' and ')+".</h2>");
+    return;
+  }
+  
+  if(navigator.userAgent.match('Chrome') && navigator.userAgent.match('Mac')) {
+    $('#loading').before('<h3>There is an issue on Chrome+Mac with jsfx library. (Noisy sounds..)<br/> If you have the bug, Please go on Safari or Firefox until we fix it.</h3>');
+  }
+  
+  var loadingTimeout = setInterval(function(){
+    $('#loading').html('<h3>Un problème est survenu au chargement de la mélodie. Rafraichissez ou essayer avec un autre navigateur (FF4, Chrome, Safari, ...).</h3>');
+  }, 10000);
+  
+  // POC
+  new Loader(function(){
+    var notes = ${melody.getNotesArray()};
+    
+    var canvas =  document.getElementById('player');
+    
+    var player = new melody.Player({
+      width: 400,
+      height: 380,
+      bpm: 280,
+      nbPitch: 24,
+      canvas: canvas,
+      melody: {
+        notes: notes,
+        generator: new melody.Generator([
+          ["synth",1,0.4000,0.1000,0.3000,1.3260,0.2240,20.0000,null,2000.0000,0.0000,0.0000,0.0000,18.0063,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,0.9890,0.0000,0.0000,0.0000,0.0000],
+          ["saw",1.0000,0.200,0.0230,0.0600,0.2280,0.3880,20.0000,null,2000.0000,-0.0800,-0.0880,0.0000,18.0542,0.1199,-0.2620,-0.0640,0.0000,0.0855,0.0000,0.0000,0.0500,0.0420,0.7490,0.1400,0.5020,0.3160,-0.4000],
+          ["sine",0.0000,0.1,0.0000,0.2580,0.7770,0.5020,20.0000,null,1984.0000,0.0000,0.0000,0.0000,7.9763,0.0003,0.0000,0.0000,0.1000,0.0000,0.0000,0.0000,0.0000,0.0000,1.0000,0.0000,0.0000,0.0000,0.0000]])
+      }
+    });
+    player.load(function(){
+      $('#loading').hide();
+      $('#main').show(); 
+      $('.choices').show();
+      player.play();
+    });
+    
+    if(melody.webWorkerReady) {
+      $('.usingWebWorker').addClass('true').removeClass('false');
+    }
+    else {
+      $('.usingWebWorker').removeClass('true').addClass('false');
+    }
+    
+  });
+      
+});
+</script>

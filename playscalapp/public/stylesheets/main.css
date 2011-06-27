@@ -1,0 +1,179 @@
+html, body {
+  background: rgb(240, 240, 240);
+  font-family: 'Droid Sans', arial, serif;
+}
+h1, h2, h3, h4, h5, h6 {
+  text-align: center;
+}
+
+h1 a {
+  text-decoration: none;
+}
+
+header, footer {
+  display: block;
+}
+
+a {
+  color: #222;
+}
+a:hover {
+  color: #555;
+}
+
+#container {
+  width: 700px;
+  margin: 0 auto;
+}
+
+#main {
+  display: table;
+  width: 100%;
+  background: rgb(240, 240, 240);
+  overflow: hidden;
+}
+#main canvas {
+  margin: 10px;
+}
+#main .playerContainer {
+  display: table-cell;
+  vertical-align: top;
+}
+#main .choicesContainer {
+  display: table-cell;
+  vertical-align: middle;
+  width: 100%;
+}
+
+ul.choices {
+  padding: 0;
+  list-style: none;
+}
+.choices li {
+  margin: 20px 0;
+  border-radius: 10px;
+  border: 2px solid black;
+  background: white;
+  text-align: center;
+  font-size: 1.3em;
+  font-family: 'Droid Sans', arial, serif;
+  font-weight: bold;
+}
+.choices li a {
+  padding: 10px;
+  display: block;
+  text-decoration: none;
+  color: #333;
+}
+
+.choices li.like:hover {
+  border-color: #3a0;
+}
+.choices li.dislike:hover {
+  border-color: #c00;
+}
+
+.choices li.like a:before, 
+.choices li.like a:after {
+  content: '\2665';
+  margin: 0 10px;
+}
+.choices li.like a:hover {
+  color: #3a1;
+}
+.choices li.dislike a:hover {
+  color: #c00;
+}
+
+.phonetic {
+  font-family: mono;
+  font-size: 0.6em;
+  opacity: 0.2;
+  font-weight: bold;
+}
+header.description h2 {
+  margin: 5px;
+}
+header.description {
+  font-style: italic;
+  font-size: 0.9em;
+  color: #333;
+  padding: 5px;
+  border: 0px dashed rgba(0,0,0,0.2);
+  border-width: 2px 0;
+}
+
+#loading {
+  color: #999;
+  min-height: 400px;
+}
+
+footer {
+  text-align: center;
+}
+
+#main .choices {
+  margin: 40px 0;
+}
+
+.share .addthis_toolbox * {
+  float: none;
+  display: inline-block;
+  vertical-align: middle;
+}
+.share .addthis_toolbox strong {
+  font-size: 1.2em;
+  margin-right: 4px;
+}
+
+.share {
+  text-align: center;
+}
+
+.melody-infos a {
+  text-decoration: none;
+}
+.melody-infos a:hover {
+  text-decoration: underline;
+}
+.melody-infos {
+  font-family: 'Coda Caption';
+  text-align: center;
+  font-size: 1.1em;
+  line-height: 1.5em;
+}
+.melody-infos .family {
+  color: #000;
+}
+.melody-infos .family:before {
+  content: '\266A';
+  margin: 2px;
+}
+.melody-infos .id {
+  color: #aaa;
+}
+.melody-infos .id:before {
+  content: '\266F';
+  margin: 2px;
+}
+.melody-infos .generation {
+  color: #39E;
+}
+.melody-infos .generation:before {
+  content: '\26A4';
+  margin: 2px;
+}
+.melody-infos .mutation {
+  color: #F66;
+}
+.melody-infos .mutation:before {
+  content: '\2622';
+  margin: 2px;
+}
+
+footer .usingWebWorker.true {
+  color: #0F0;
+}
+footer .usingWebWorker.false {
+  color: #F00;
+}

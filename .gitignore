@@ -1,1 +1,8 @@
 /main/tmp/
+main/.classpath
+main/.project
+main/.settings/
+main/eclipse/
+playscalapp/modules/
+playscalapp/test/
+playscalapp/tmp/

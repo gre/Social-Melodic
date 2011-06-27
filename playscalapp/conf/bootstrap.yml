@@ -1,0 +1,2 @@
+- !!models.Melody
+    id: !!Id[Long] 1

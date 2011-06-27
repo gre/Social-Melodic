@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>♫ Social Melodic#{if title} - #{get 'title' /}#{/if}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link href='http://fonts.googleapis.com/css?family=Droid+Sans:regular,bold' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Coda+Caption:800' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" media="screen" href="@{'/public/stylesheets/main.css'}">
+    #{get 'moreStyles' /}
+    <link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.png'}">
+    
+    #{script "lib/jquery.min.js" /}
+    #{script "lib/underscore-min.js" /}
+    #{script "lib/processing-1.0.0.min.js" /}
+    #{script "lib/jsfx/audio.js" /}
+    #{script "lib/jsfx/jsfx.js" /}
+    
+    #{get 'moreScripts' /}
+    <body>
+      <div id="container">
+        #{doLayout /}
+      </div>
+    </body>
+</html>

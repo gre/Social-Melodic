@@ -1,0 +1,30 @@
+#{extends './main.html' /}
+
+
+<div id="loading">
+  <h2><img src="/public/images/ajax-loader.gif" /> Loading...</h2> 
+</div>
+
+<div id="main">
+  TODO
+</div>
+
+<script type="text/javascript">
+  window.melody = { GeneratorWorker: "@{'/public/javascripts/worker.js'}" };
+</script>
+#{script "melody-utils.js" /}
+#{script "melody-player.js" /}
+#{script "melody-generator.js" /}
+#{script "loader.js" /}
+
+<script type="text/javascript">
+$(function(){
+  
+  // POC
+  new Loader(function(){
+    $('#loading').hide();
+    
+  });
+      
+});
+</script>
