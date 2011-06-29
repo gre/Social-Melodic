@@ -18,6 +18,4 @@ object Application extends Controller {
     def melodyNotFound = Template
     
     def vote(id:Long, vote:String) = random
-    
-    
 }
