@@ -7,7 +7,12 @@ import models._
 
 object Application extends Controller {
     
-    def index = Template
+    def index = {
+        //Melody.getFirst
+        val f = Family.bootstrap("test", 3, 16, 20)
+        f.root.get.notes
+        //Template
+    }
     
     def melodyComposer = Template
     def toneComposer = Template
