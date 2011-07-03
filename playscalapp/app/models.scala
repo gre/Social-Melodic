@@ -29,23 +29,23 @@ case class Family (
     luckToIgnoreSamePosition : Double = 0.2
 ) {
     override def toString = name
-    def root = root_id match { case Some(id) => Melody.find("id = {id}").on("id" -> id).first() }
+    def root = root_id match { case Some(id) => Melody.findById(id) }
 }
 
 object Family extends Magic[Family] {
     def apply(name:String):Family = Family(NotAssigned, name, Status.GENERATION.toString, None, new Date(), 0.1, 0.7, 0.85, 0.1, 0.2)
     def bootstrap(name:String, nbMelodies:Int):Family = bootstrap(name, nbMelodies, 16, 20)
     def bootstrap(name:String, nbMelodies:Int, loopLength:Int, notesLength:Int):Family = {
-        val family:Family = create(apply(name)).get;
-        val m:Melody = Melody.create(family, loopLength, notesLength).get;
-        val f = family.copy(root_id=m.id.get)
-        update(f);
+        val f:Family = create(apply(name)).get;
+        val m:Melody = Melody.create(f, loopLength, notesLength).get;
+        val family = f.copy(root_id=m.id.get)
+        update(family);
         for(i <- 0 until nbMelodies) {
             m.id.get match {
                 case Some(id) => Note.create(Note(id, i*2, (Math.random*notesLength).toInt ))
             }
         }
-        f
+        family
     }
 }
 
@@ -62,21 +62,14 @@ case class Melody (
   sterile: Boolean = false,
   created: Date = new Date()
 ) {
+    def notes = Note.find("melody_id = {melody_id} order by pos").on("melody_id" -> id.apply()).list()
 
-    def setFamily(f:Family) = {
-        //family_id = f.id
-        this
+    def notesArray = {
+      val all = notes
+      (0 until loopLength).map(
+        (pos:Int) => all.filter( (n:Note) => n.pos==pos ).map( (n:Note)=>n.pitch ).mkString("[", ",", "]") 
+      ).mkString("[", ",", "]")
     }
-
-    def notes() = {
-        Note.find("melody_id = {melody_id} order by pos").on("melody_id" -> id.apply()).list()
-    }
-
-    def notesArray() = {
-    }
-
-    // TODO
-    // def getNotesArray() = "[[14, 16], [13], [23], [], [20], [], [7], [], [22], [], [23], [], [8], [], [20], [], [22], [], [22], []]"
 }
 
 object Melody extends Magic[Melody] {
@@ -90,6 +83,10 @@ object Melody extends Magic[Melody] {
         case Some(id) => Some(create(Melody(id, loopLength, notesLength)).get)
         case None => None
     }
+  }
+  
+  def findById(id:Long) = {
+    Melody.find("id = {id}").on("id" -> id).first()
   }
 }
 

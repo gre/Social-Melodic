@@ -8,17 +8,19 @@ import models._
 object Application extends Controller {
     
     def index = {
-        //Melody.getFirst
-        val f = Family.bootstrap("test", 3, 16, 20)
-        f.root.get.notes
-        //Template
+        Family.bootstrap("test", 3, 16, 20)
+        Template
     }
     
     def melodyComposer = Template
     def toneComposer = Template
-    def random = melody(1L)
     
-    def melody(id:Long) = Template( 'melody -> Melody.getFirst())
+    // TMP
+    def random = melody( Melody.find().list().map( (m:Melody) => m.id.apply() ).reduceLeft( (a,b) => if(Math.random>0.5) a else b ))
+    
+    def melody(id:Long) = Melody.findById(id)
+                          .map( m => Template( 'melody -> m) )
+                          .getOrElse(NotFound)
     def noMoreMelodies = Template
     def melodyNotFound = Template
     
