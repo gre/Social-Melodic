@@ -34,18 +34,21 @@ case class Family (
 
 object Family extends Magic[Family] {
     def apply(name:String):Family = Family(NotAssigned, name, Status.GENERATION.toString, None, new Date(), 0.1, 0.7, 0.85, 0.1, 0.2)
-    def bootstrap(name:String, nbMelodies:Int):Family = bootstrap(name, nbMelodies, 16, 20)
-    def bootstrap(name:String, nbMelodies:Int, loopLength:Int, notesLength:Int):Family = {
+    def bootstrap(name:String, nbMelodies:Int):Option[Family] = bootstrap(name, nbMelodies, 16, 20)
+    def bootstrap(name:String, nbMelodies:Int, loopLength:Int, notesLength:Int):Option[Family] = {
         val f:Family = create(apply(name)).get;
-        val m:Melody = Melody.create(f, loopLength, notesLength).get;
-        val family = f.copy(root_id=m.id.get)
-        update(family);
-        for(i <- 0 until nbMelodies) {
-            m.id.get match {
-                case Some(id) => Note.create(Note(id, i*2, (Math.random*notesLength).toInt ))
+        Melody.create(f, loopLength, notesLength) map(
+            (m:Melody) => {
+            val family = f.copy(root_id=m.id.get)
+            update(family);
+            for(i <- 0 until nbMelodies) {
+                m.id.get match {
+                    case Some(id) => Note.create(Note(id, i*2, (Math.random*notesLength).toInt ))
+                }
             }
-        }
-        family
+            family
+            }
+        )
     }
 }
 
@@ -77,12 +80,10 @@ object Melody extends Magic[Melody] {
   def getFirst() = {
     Melody.find().first().get
   }
-
+  def getRandom() = find().list().reduceLeft( (a,b) => if(Math.random>0.5) a else b )
+  
   def create(family:Family, loopLength:Int, notesLength:Int):Option[Melody] = {
-    family.id.get match {
-        case Some(id) => Some(create(Melody(id, loopLength, notesLength)).get)
-        case None => None
-    }
+    family.id.get.map( id => Some(create(Melody(id, loopLength, notesLength)).get) ).getOrElse(None)
   }
   
   def findById(id:Long) = {

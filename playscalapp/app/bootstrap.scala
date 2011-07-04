@@ -5,16 +5,10 @@ import play.test._
 @OnApplicationStart class BootStrap extends Job {
     
     override def doJob {
-        /*
-        // Import initial data if the database is empty
-        if(Melody.count().single() == 0) {
-            Yaml[List[Any]]("bootstrap.yml").foreach {
-                _ match {
-                    case m:Melody => Melody.create(m)
-                }
-            }
+        if(Family.count().single() == 0) {
+            Family.bootstrap("Alpha", 1, 20, 16);
+            Family.bootstrap("Typhon", 2, 32, 20);
         }
-        */
     }
     
 }
